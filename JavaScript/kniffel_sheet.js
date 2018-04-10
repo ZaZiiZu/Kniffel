@@ -5,22 +5,26 @@ $(document).ready(function () {
     var block_lower = ["Dreierpasch", "Viererpasch", "Full House", "Kleine Straße", "Große Straße", "Kniffel", "Chance"];
     var block_lower_sum = ["Summe unten", "Summe oben", "Gesamtsumme"];
     var block_all = [];
-    var i = 0, j=0, k=0;
-    var sum_upper = 0, 
+    var i = 0,
+        j = 0,
+        k = 0;
+    var sum_upper = 0,
         sum_lower = 0;
-        bonus_upper = 0;
-        sum_total = 0; 
-    (function generate_sheet() {
+    bonus_upper = 0;
+    sum_total = 0;
+    generate_sheet();
+
+    function generate_sheet() {
 
         block_all = block_all.concat(block_upper, block_upper_sum, block_lower, block_lower_sum);
         var newLine = "";
 
         $(".kniffel_sheet").append("<table class='table table-striped table-dark'>");
-        for (i = 0, j = 0; i < block_all.length; i++) {
+        for (i = 0; i < block_all.length; i++) {
             $(".kniffel_sheet").append("<tr>");
-            $(".kniffel_sheet").append("<td class='kniffel sheet categories id='" + i + "_" + j + "'>" + block_all[i] + "</td");
-            for (j = 0; j < player_amount; j++) {
-                newLine = "<td class='kniffel sheet players' id='" + i + "_" + (1 + j) + "'>";
+            $(".kniffel_sheet").append("<td class='kniffel sheet categories'" + "id='" + i + "_" + 0 + "'>" + block_all[i] + "</td");
+            for (j = 1; j <= player_amount; j++) {
+                newLine = "<td class='kniffel sheet players'" + "id='" + i + "_" + j + "'>";
                 newLine += "0";
                 newLine += "</td>";
                 $(".kniffel_sheet").append(newLine);
@@ -28,7 +32,8 @@ $(document).ready(function () {
             $(".kniffel_sheet").append("</tr>");
         }
         $(".kniffel_sheet").append("</table>");
-    })();
+        $(".kniffel_sheet").append("<div class='ready_flag'></div>");
+    }
 
 
     $('#button_sheet_initialize').click(function () {
@@ -67,25 +72,25 @@ $(document).ready(function () {
 
     function recalc_upper_total() {
         sum_upper = parseInt($("#" + (parseInt(i)) + "_" + j).html()) + parseInt($("#" + (parseInt(i) + 1) + "_" + j).html());
-        $("#" + (block_upper.length+2) + "_" + j).text(sum_upper);
-        $("#" + (block_upper.length+block_upper_sum.length+block_lower.length+1) + "_" + j).text(sum_upper)
+        $("#" + (block_upper.length + 2) + "_" + j).text(sum_upper);
+        $("#" + (block_upper.length + block_upper_sum.length + block_lower.length + 1) + "_" + j).text(sum_upper)
         return sum_upper;
     }
 
     function recalc_sum_lower() {
         sum_lower = 0;
         i = block_upper.length + block_lower_sum.length;
-        k = block_upper.length + block_lower_sum.length+block_lower.length;
-        for (i ; i < k; i++) {
+        k = block_upper.length + block_lower_sum.length + block_lower.length;
+        for (i; i < k; i++) {
             sum_lower += parseInt($("#" + i + "_" + j).html());
         }
         $("#" + (parseInt(i)) + "_" + j).html(sum_lower);
-        
+
         return sum_lower;
     }
-    
-    function recalc_lower_total(){
-        i = block_all.length-1;
+
+    function recalc_lower_total() {
+        i = block_all.length - 1;
         sum_total = sum_lower + sum_upper;
 
         $("#" + (parseInt(i)) + "_" + j).html(sum_total);

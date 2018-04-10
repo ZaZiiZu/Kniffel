@@ -7,3 +7,25 @@ td.kniffel {
 .kniffel_sheet {
     border-style: none;
 }
+.kniffel_buttons{
+    height: 300px;
+}
+.dice {
+    height: 48px;
+    width: 48px;
+    margin: 2px;
+    padding: 10px 0px;
+    border: 1px;
+    border-style: solid;
+    text-align: center;
+
+}
+.dice.dice-fixed {
+    background: red;
+}
+.dice.dice-available {
+    background: greenyellow;
+}
+.players.fixed {
+    background: red;
+}
