@@ -10,8 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 
-    <script src="JavaScript/kniffel_sheet.js"></script>
-    <script src="JavaScript/kniffel_rolls.js"></script>
+    <script src="JavaScript/kniffel.js"></script>
     <script src="JavaScript/try1.js"></script>
 
     <link rel="stylesheet" href="CSS/kniffel_css.css">
@@ -39,16 +38,16 @@
                         <button type="button" id="button_sheet_recalc" class="button sheet_recalc">recalculate</button>
                     </div>
                     <div class="kniffel_rolls container">
-                            <h4>rolls</h4>
-                            <button type="button" id="button_roll" class="button roll">roll!</button>
-                            <button type="button" id="button_nextTurn" class="button roll">next turn!</button>                        
-                            <div class="row">
-                            <div id="roll1" class="dice dice-available col">0</div>
-                            <div id="roll2" class="dice dice-available col">0</div>
-                            <div id="roll3" class="dice dice-available col">0</div>
-                            <div id="roll4" class="dice dice-available col">0</div>
-                            <div id="roll5" class="dice dice-available col">0</div>
-                        </div>
+                        <h4>rolls</h4>
+                        <button type="button" id="button_roll" class="button roll">roll!</button>
+                    <!--    <button type="button" id="button_nextTurn" class="button roll">next turn!</button>                        
+                    --> <div class="row">
+                        <div id="roll1" class="dice dice-available col">0</div>
+                        <div id="roll2" class="dice dice-available col">0</div>
+                        <div id="roll3" class="dice dice-available col">0</div>
+                        <div id="roll4" class="dice dice-available col">0</div>
+                        <div id="roll5" class="dice dice-available col">0</div>
+                    </div>
                         <p>Remaining rolls: <span id='remaining_rolls'>3</span> </p>
                     </div>
 
@@ -60,7 +59,6 @@
 <list>
     
         <li>to do:</li>
-        <li>bonuspunkte (3er, 4er, fullhouse, ...) berechnen</li>
         <li>table-generierung weniger verallgemeinert</li>
         <li>local multiplayer</li>
         <li>...</li>

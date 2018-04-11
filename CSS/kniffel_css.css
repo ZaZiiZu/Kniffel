@@ -26,6 +26,33 @@ td.kniffel {
 .dice.dice-available {
     background: greenyellow;
 }
+
+div .table1 {
+    background: rgb(220, 220, 220);
+    border-style: solid;
+    border-width: 1px;
+    box-shadow: rgb(50,50, 50) 5px 5px 15px;
+}
+
+
+td.columns.active.clickable:hover {
+    cursor: pointer;
+}
+td.categories {
+    font-style: italic
+}
+
+td.columns {
+    border-left-width: 3px;
+    border-left-style: double;
+    padding: 0 15px 0 15px;
+    font-weight: 600; 
+}
 .players.fixed {
-    background: red;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+td.block2 {
+    background: rgba(0, 0, 0, 0.2);
+    font-weight: 700; 
 }
