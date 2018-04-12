@@ -31,25 +31,30 @@
                         <h4>Sheet</h4>
                     </div>
                 </div>
-                <div class="kniffel_right container col-4">
-                    <div class="kniffel_buttons container">
-                        <h4>Buttons</h4>
-                        <button type="button" id="button_sheet_initialize" class="button sheet_initialize">random rolls</button>
-                        <button type="button" id="button_sheet_recalc" class="button sheet_recalc">recalculate</button>
-                    </div>
+                <div class="kniffel_right container col-4">                    
+                    <button type="button" id="button_sheet_reset" class="button">reset</button>
+                    
                     <div class="kniffel_rolls container">
                         <h4>rolls</h4>
                         <button type="button" id="button_roll" class="button roll">roll!</button>
-                    <!--    <button type="button" id="button_nextTurn" class="button roll">next turn!</button>                        
-                    --> <div class="row">
-                        <div id="roll1" class="dice dice-available col">0</div>
-                        <div id="roll2" class="dice dice-available col">0</div>
-                        <div id="roll3" class="dice dice-available col">0</div>
-                        <div id="roll4" class="dice dice-available col">0</div>
-                        <div id="roll5" class="dice dice-available col">0</div>
+                        <!--    
+                        <button type="button" id="button_nextTurn" class="button roll">next turn!</button>                        
+                        --> 
+                        <div class="row">
+                            <div id="roll1" class="dice dice-available col">0</div>
+                            <div id="roll2" class="dice dice-available col">0</div>
+                            <div id="roll3" class="dice dice-available col">0</div>
+                            <div id="roll4" class="dice dice-available col">0</div>
+                            <div id="roll5" class="dice dice-available col">0</div>
+                        </div>
+                            <p>Remaining rolls: <span id='remaining_rolls'>3</span> </p>
                     </div>
-                        <p>Remaining rolls: <span id='remaining_rolls'>3</span> </p>
+                    <div class="kniffel_win container" hidden>
+                        <h4>Buttons</h4>
+                        <button type="button" id="button_sheet_newGame" class="button">new Game</button>
+                        <p id='winningText'>game won!</p>
                     </div>
+                </div>
 
                 </div>
             </div>

@@ -51,21 +51,18 @@ $(document).ready(function () {
     }, {
         name: "Summe oben",
         classBlock: classes.block2(),
-        methode: 'sum_sums',
+        methode: 'recalc_sum_upper',
         line: 'tl7',
-        sums: '.block1.fixed',
     }, {
         name: "Bonus bei 63 oder mehr",
         classBlock: classes.block2(),
-        methode: 'sum_sums',
+        methode: 'recalc_bonus_upper',
         line: 'tl8',
-        sums: '#tl7_1',
     }, {
         name: "gesamt oberer Teil",
         classBlock: classes.block2(),
-        methode: 'sum_sums',
+        methode: 'recalc_upper_total',
         line: 'tl9',
-        sums: '#tl7_1, #tl8_1',
     }, {
         name: "Dreierpasch",
         classBlock: classes.block3(),
@@ -104,21 +101,18 @@ $(document).ready(function () {
     }, {
         name: "gesamt unterer Teil",
         classBlock: classes.block2(),
-        methode: 'sum_sums',
+        methode: 'recalc_sum_lower',
         line: 'tl17',
-        sums: '.block3.fixed',
     }, {
         name: "gesamt oberer Teil",
         classBlock: classes.block2(),
-        methode: 'sum_sums',
+        methode: 'recalc_upper_total',
         line: 'tl18',
-        sums: '#tl7_1, #tl8_1',
     }, {
         name: "Endsumme",
         classBlock: classes.block2(),
-        methode: 'sum_sums',
+        methode: 'recalc_lower_total',
         line: 'tl19',
-        sums: '#tl17_1, #tl18_1',
     }];
 
 
@@ -127,6 +121,7 @@ $(document).ready(function () {
         k = 0;
     var sum_upper = 0,
         sum_lower = 0,
+        bonus_upper = 0,
         sum_total = 0;
 
     generate_sheet();
@@ -146,8 +141,6 @@ $(document).ready(function () {
         $(".kniffel_sheet").append(table);
     }
 
-    //$('.block1, #tl17_1').html('LUUUL');
-
 
     $('#button_sheet_initialize').click(function () {
         sheet_fill();
@@ -159,11 +152,11 @@ $(document).ready(function () {
 
     function sheet_recalc() {
         for (j = 1; j <= player_amount; j++) {
-            sum_upper = allFunctions.sum_upper();
-            allFunctions.bonus_upper(sum_upper);
-            sum_upper = allFunctions.upper_total();
-            sum_lower = allFunctions.sum_lower();
-            sum_upper = allFunctions.lower_total();
+            sum_upper = recalc.sum_upper();
+            recalc.bonus_upper(sum_upper);
+            sum_upper = recalc.upper_total();
+            sum_lower = recalc.sum_lower();
+            sum_upper = recalc.lower_total();
         }
     }
 
@@ -228,16 +221,16 @@ $(document).ready(function () {
 
     function fixSelf() {
         $(thisObject).removeClass('active').addClass('fixed');
-
+        
         var x = $(".columns.clickable").not('.fixed').length;
-        console.log('clicks open: ', x);
+        console.log ('clicks open: ', x);
 
         $('.players.active').removeClass('active');
         return x == 0 ? 1 : 0;
     }
 
     function newTurn(endFlag) {
-        endFlag;
+        endFlag ;
 
         $('#button_roll').prop('disabled', false);
         remaining_rolls = 3 + 1;
@@ -287,48 +280,56 @@ $(document).ready(function () {
         rollsArray = getArray(string);
         console.log(rollsArray);
 
-        for (i = 0; i < sheet.length; i++) {
+        for (i = 1; i <= 6; i++) {
 
-            console.log('loop: ', i);
-            var x = allFunctions[sheet[i].methode](rollsArray, i) || 0;
-            console.log('loop: ', i);
-            $("#" + sheet[i].line + "_1").not('.fixed').text(x);
+            var funcName = sheet[i].methode
+            var func = allFunctions[funcName]
+            var x  = func(rollsArray, i);
 
+            $("#"+sheet[i].line+"_1").not('.fixed').text(x);
+
+        }
+
+        var block3_length = ('.block3').length;
+
+        for (var i = 10; i < block3_length + 10; i++) {
+
+            var funcName = sheet[i].methode
+            var func = allFunctions[funcName]
+            var x  = func(rollsArray, i);
+            $("#"+sheet[i].line+"_1").not('.fixed').text(x);
 
         }
     }
 
+    function checkEnd() {
+
+    }
+
+    function getArray(string) {
+        rollsArray = string.split('').sort();
+        for (i = 0; i < rollsArray.length; i++) {
+            rollsArray[i] = parseInt(rollsArray[i]);
+        }
+        return rollsArray;
+    }
 
     var allFunctions = {
         matching: function (asdf, i) {
             asdf ? rollsArray = asdf : 0;
             var z = 0;
             switch (sheet[i].name) {
-                case 'Einer':
-                    z = 1;
-                    break;
-                case 'Zweier':
-                    z = 2;
-                    break;
-                case 'Dreier':
-                    z = 3;
-                    break;
-                case 'Vierer':
-                    z = 4;
-                    break;
-                case 'Fünfer':
-                    z = 5;
-                    break;
-                case 'Sechser':
-                    z = 6;
-                    break;
-                default:
-                    z = 0;
+                case 'Einer': z=1; break;
+                case 'Zweier': z=2; break;
+                case 'Dreier': z=3; break;
+                case 'Vierer': z=4; break;
+                case 'Fünfer': z=5; break;
+                case 'Sechser': z=6; break;
+                default: z=0;
             }
             var x = arraySum(rollsArray.filter(function (j) {
-                return j == z;
-            }))
-            return x;
+                return j == z;}))
+                return x;
 
         },
         dreierPasch: function (asdf) {
@@ -344,8 +345,8 @@ $(document).ready(function () {
         },
         viererPasch: function (asdf) {
             asdf ? rollsArray = asdf : 0;
-            for (var i = 0; i < 2; i++) {
-                if (/[1-6]/g.test(rollsArray) &&
+            for (i = 0; i < 2; i++) {
+                if (/[1-6]/g.test(rollsArray)&&
                     rollsArray[i] === rollsArray[i + 1] &&
                     rollsArray[i] === rollsArray[i + 2] &&
                     rollsArray[i] === rollsArray[i + 3]) {
@@ -357,13 +358,13 @@ $(document).ready(function () {
         },
         fullHouse: function (asdf) {
             asdf ? rollsArray = asdf : 0;
-            if (/[1-6]/g.test(rollsArray) &&
+            if (/[1-6]/g.test(rollsArray)&&
                 rollsArray[0] === rollsArray[1] &&
                 rollsArray[3] === rollsArray[4] &&
                 (rollsArray[0] === rollsArray[2] || rollsArray[4] === rollsArray[2])) {
                 return 25;
             }
-            return 0;
+                return 0;
 
         },
         kleineStraße: function (asdf) {
@@ -409,84 +410,8 @@ $(document).ready(function () {
         none: function () {
             return 0;
         },
-        sum_sums: function (asdf, i) {
-            var sum_current = 0;
-            let found = $(sheet[i].sums);
-            for (var i = 0; i < found.length; i++) {
-                sum_current += parseInt($('#' + found[i].id + '').html()) || 0;
-            }
-            return sum_current;
-
-        },
-        sum_upper: function (asdf, i) {
-            var sum_upper = 0;
-            let found = $(sheet[i].sums);
-            console.log('sum of line: ', i, sheet[i].name, found, sum_upper )
-            for (var i = 0; i < found.length; i++) {
-                sum_upper += parseInt($('#' + found[i].id + '').html()) || 0;
-            }
-            console.log('sum of line: ^', sum_upper);
-            //$("#tl" + ($('.block1.categories').length + 1) + "_" + j).html(sum_upper);
-            //console.log('sum_upper', this, sum_upper);
-            return sum_upper;
-        },
-        bonus_upper: function (asdf, i) {
-            //let sum_upper >= 63 ? bonus_upper = 35 : bonus_upper = 0;
-            console.log('bonus_upper the i: ', i);
-            return $('#tl7_1') >= 63 ? 35 : 0;
-            //$("#tl8" + "_" + j).html(bonus_upper);
-
-        },
-        upper_total: function (asdf, i) {
-            var sum_lower = 0;
-            console.log('sum lower: ', i);
-            let found = $(sheet[i].sums);
-            for (var i = 0; i < found.length; i++) {
-                sum_lower += parseInt($(found[i]).html()) || 0;
-            }
-            return sum_lower;
-
-        },
-        sum_lower: function (asdf, i) {
-            var sum_lower = 0;
-            console.log('sum lower: ', i);
-            let found = $(sheet[i].sums);
-            for (var i = 0; i < found.length; i++) {
-                sum_lower += parseInt($(found[i]).html()) || 0;
-            }
-            return sum_lower;
-
-        },
-        lower_total: function (asdf, i) {
-            i = sheet.length - 1;
-            var sum_total = 0;
-            //sum_total = sum_lower + sum_upper;
-            let found = $(sheet[i].sums);
-            console.log('got into lower total');
-            for (var i = 0; i < found.length; i++) {
-                console.log('got into lower total loop');
-                sum_total += parseInt($(found[i]).html()) || 0;
-            }
-            console.log('got into lower total and returning: ', sum_total);
-            return sum_total;
-
-        }
-
 
     };
-
-    function checkEnd() {
-
-    }
-
-    function getArray(string) {
-        rollsArray = string.split('').sort();
-        for (var i = 0; i < rollsArray.length; i++) {
-            rollsArray[i] = parseInt(rollsArray[i]);
-        }
-        return rollsArray;
-    }
-    /*
     var recalc = {
         sum_upper: function () {
             sum_upper = 0;
@@ -530,52 +455,52 @@ $(document).ready(function () {
         }
 
     };
-*/
+
     // test();
 
-    function test() {
-        var testForeign = [1, 2, 3, '-', 5];
-        var testNone = [1, 2, 2, 3, 5];
-        var test3er1 = [1, 2, 2, 4, 5]
-        var test3er2 = [1, 2, 2, 2, 5];
-        var test4er1 = [1, 2, 2, 2, 5];
-        var test4er2 = [1, 2, 2, 2, 2];
-        var testFH1 = [1, 2, 2, 2, 5];
-        var testFH2 = [1, 1, 2, 2, 2];
-        var testkS1 = [1, 2, 3, 5, 5];
-        var testkS2 = [1, 2, 2, 3, 4];
-        var testgS1 = [1, 2, 3, 4, 5];
-        var testgS2 = [2, 3, 4, 5, 6];
-        var testK1 = [1, 2, 2, 2, 2];
-        var testK2 = [2, 2, 2, 2, 2];
-        console.log('TESTS-START');
-        console.log('3erPasch testForeign', testForeign, allFunctions.dreierPasch(testForeign));
-        console.log('3erPasch testNone', testNone, allFunctions.dreierPasch(testNone));
-        console.log('3erPasch test3er1', test3er1, allFunctions.dreierPasch(test3er1));
-        console.log('3erPasch test3er2', test3er2, allFunctions.dreierPasch(test3er2));
-        console.log('4erPasch testForeign', testForeign, allFunctions.viererPasch(testForeign));
-        console.log('4erPasch testNone', testNone, allFunctions.viererPasch(testNone));
-        console.log('4erPasch test4er1', test4er1, allFunctions.viererPasch(test4er1));
-        console.log('4erPasch test4er2', test4er2, allFunctions.viererPasch(test4er2));
-        console.log('Full-House testForeign', testForeign, allFunctions.fullHouse(testForeign));
-        console.log('Full-House testNone', testNone, allFunctions.fullHouse(testNone));
-        console.log('Full-House testFH1', testFH1, allFunctions.fullHouse(testFH1));
-        console.log('Full-House testFH2', testFH2, allFunctions.fullHouse(testFH2));
-        console.log('kleineStraße testForeign', testForeign, allFunctions.kleineStraße(testForeign));
-        console.log('kleineStraße testNone', testNone, allFunctions.kleineStraße(testNone));
-        console.log('kleineStraße testkS1', testkS1, allFunctions.kleineStraße(testkS1));
-        console.log('kleineStraße testkS2', testkS2, allFunctions.kleineStraße(testkS2));
-        console.log('großeStraße testForeign', testForeign, allFunctions.großeStraße(testForeign));
-        console.log('großeStraße testNone', testNone, allFunctions.großeStraße(testNone));
-        console.log('großeStraße testgS1', testgS1, allFunctions.großeStraße(testgS1));
-        console.log('großeStraße testgS2', testgS2, allFunctions.großeStraße(testgS2));
-        console.log('Kniffel testForeign', testForeign, allFunctions.Kniffel(testForeign));
-        console.log('Kniffel testNone', testNone, allFunctions.Kniffel(testNone));
-        console.log('Kniffel testK1', testK1, allFunctions.Kniffel(testK1));
-        console.log('Kniffel testK2', testK2, allFunctions.Kniffel(testK2));
-        console.log('TESTS-ENDE');
+    function test(){
+    var testForeign = [1,2,3,'-',5] ;
+    var testNone = [1, 2, 2, 3, 5];
+    var test3er1 =[1,2,2,4,5]
+    var test3er2 =[1,2,2,2,5];
+    var test4er1 =[1,2,2,2,5];
+    var test4er2 =[1,2,2,2,2];
+    var testFH1=[1,2,2,2,5];
+    var testFH2=[1,1,2,2,2];
+    var testkS1=[1,2,3,5,5];
+    var testkS2=[1,2,2,3,4];
+    var testgS1=[1,2,3,4,5];
+    var testgS2=[2,3,4,5,6];
+    var testK1=[1, 2, 2, 2, 2];
+    var testK2=[2, 2, 2, 2, 2];
+    console.log('TESTS-START');
+    console.log('3erPasch testForeign', testForeign, allFunctions.dreierPasch(testForeign));
+    console.log('3erPasch testNone', testNone, allFunctions.dreierPasch(testNone));
+    console.log('3erPasch test3er1', test3er1, allFunctions.dreierPasch(test3er1));
+    console.log('3erPasch test3er2', test3er2, allFunctions.dreierPasch(test3er2));
+    console.log('4erPasch testForeign', testForeign, allFunctions.viererPasch(testForeign));
+    console.log('4erPasch testNone', testNone, allFunctions.viererPasch(testNone));
+    console.log('4erPasch test4er1', test4er1, allFunctions.viererPasch(test4er1));
+    console.log('4erPasch test4er2', test4er2, allFunctions.viererPasch(test4er2));
+    console.log('Full-House testForeign', testForeign, allFunctions.fullHouse(testForeign));
+    console.log('Full-House testNone', testNone, allFunctions.fullHouse(testNone));
+    console.log('Full-House testFH1', testFH1, allFunctions.fullHouse(testFH1));
+    console.log('Full-House testFH2', testFH2, allFunctions.fullHouse(testFH2));
+    console.log('kleineStraße testForeign', testForeign, allFunctions.kleineStraße(testForeign));
+    console.log('kleineStraße testNone', testNone, allFunctions.kleineStraße(testNone));
+    console.log('kleineStraße testkS1', testkS1, allFunctions.kleineStraße(testkS1));
+    console.log('kleineStraße testkS2', testkS2, allFunctions.kleineStraße(testkS2));
+    console.log('großeStraße testForeign', testForeign, allFunctions.großeStraße(testForeign));
+    console.log('großeStraße testNone', testNone, allFunctions.großeStraße(testNone));
+    console.log('großeStraße testgS1', testgS1, allFunctions.großeStraße(testgS1));
+    console.log('großeStraße testgS2', testgS2, allFunctions.großeStraße(testgS2));
+    console.log('Kniffel testForeign', testForeign, allFunctions.Kniffel(testForeign));
+    console.log('Kniffel testNone', testNone, allFunctions.Kniffel(testNone));
+    console.log('Kniffel testK1', testK1, allFunctions.Kniffel(testK1));
+    console.log('Kniffel testK2', testK2, allFunctions.Kniffel(testK2));
+    console.log('TESTS-ENDE');
 
-    }
+}
 
     // copy paste aus'm netz
     function arraySum(array) {
