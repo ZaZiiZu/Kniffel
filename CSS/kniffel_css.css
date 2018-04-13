@@ -7,18 +7,18 @@ td.kniffel {
 .kniffel_sheet {
     border-style: none;
 }
-.kniffel_buttons{
-    height: 300px;
-}
 .button {
     margin: 15px; 
 }
 .dice {
     height: 48px;
+    max-height: 48px;
     width: 48px;
+    max-width: 48px;
     margin: 2px;
     padding: 10px 0px;
     border: 1px;
+    border-radius: 5px;
     border-style: solid;
     text-align: center;
 
@@ -47,8 +47,8 @@ td.categories {
 }
 .kniffel_rolls .row {
     margin: auto;
+    justify-content: center;
 }
-
 td.columns {
     border-left-width: 3px;
     border-left-style: double;
@@ -64,7 +64,7 @@ td.block2 {
     font-weight: 700; 
 }
 .container {
-    padding: 40px;
+    padding: 20px;
     background: #FFFFFF;
     border-style: groove;
     border-width: 2px;
@@ -73,4 +73,7 @@ td.block2 {
     box-shadow: #000000 15px 15px 30px;
     text-align: center;
     align-self: center;
+}
+.container-fluid {
+    margin: 20px;
 }

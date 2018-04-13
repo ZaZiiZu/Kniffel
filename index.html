@@ -11,9 +11,9 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 
     <script src="JavaScript/kniffel.js"></script>
-    <link rel="stylesheet" href="CSS/kniffel_css.css">
     
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="CSS/kniffel_css.css">
 
     <style></style>
     <script></script>
@@ -30,7 +30,9 @@
                         <h4>Sheet</h4>
                     </div>
                 </div>
-                <div class="kniffel_right container col-5">                    
+                <div class="kniffel_right container col-5">
+                        <label for="player_count">Amount of players:</label>
+                        <input id='player_count' type='number' value='1' list='' placeholder='Players from 1 to over 9000' min='1' max='9001'>
                     <button type="button" id="button_sheet_reset" class="button">reset</button>
                     
                     <div class="kniffel_rolls container">
@@ -40,11 +42,11 @@
                         <button type="button" id="button_nextTurn" class="button roll">next turn!</button>                        
                         --> 
                         <div class="row">
-                            <div id="roll1" class="dice dice-available ">0</div>
-                            <div id="roll2" class="dice dice-available ">0</div>
-                            <div id="roll3" class="dice dice-available ">0</div>
-                            <div id="roll4" class="dice dice-available ">0</div>
-                            <div id="roll5" class="dice dice-available ">0</div>
+                            <div id="roll1" class="dice dice-available col">0</div>
+                            <div id="roll2" class="dice dice-available col">0</div>
+                            <div id="roll3" class="dice dice-available col">0</div>
+                            <div id="roll4" class="dice dice-available col">0</div>
+                            <div id="roll5" class="dice dice-available col">0</div>
                         </div>
                             <p>Remaining rolls: <span id='remaining_rolls'>3</span> </p>
                     </div>
