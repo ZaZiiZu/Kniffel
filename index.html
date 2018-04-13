@@ -11,9 +11,8 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 
     <script src="JavaScript/kniffel.js"></script>
-    <script src="JavaScript/try1.js"></script>
-
     <link rel="stylesheet" href="CSS/kniffel_css.css">
+    
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 
     <style></style>
@@ -23,15 +22,15 @@
 
 <body>
     <div class="container-fluid">
-        <h3>Kniffel, version 0.1</h3>
         <div class="Kniffel_box container">
+            <h3>Kniffel</h3>
             <div class="row">
-                <div class="kniffel_left container col-8">
+                <div class="kniffel_left container col-7">
                     <div class="kniffel_sheet container-fluid">
                         <h4>Sheet</h4>
                     </div>
                 </div>
-                <div class="kniffel_right container col-4">                    
+                <div class="kniffel_right container col-5">                    
                     <button type="button" id="button_sheet_reset" class="button">reset</button>
                     
                     <div class="kniffel_rolls container">
@@ -41,33 +40,34 @@
                         <button type="button" id="button_nextTurn" class="button roll">next turn!</button>                        
                         --> 
                         <div class="row">
-                            <div id="roll1" class="dice dice-available col">0</div>
-                            <div id="roll2" class="dice dice-available col">0</div>
-                            <div id="roll3" class="dice dice-available col">0</div>
-                            <div id="roll4" class="dice dice-available col">0</div>
-                            <div id="roll5" class="dice dice-available col">0</div>
+                            <div id="roll1" class="dice dice-available ">0</div>
+                            <div id="roll2" class="dice dice-available ">0</div>
+                            <div id="roll3" class="dice dice-available ">0</div>
+                            <div id="roll4" class="dice dice-available ">0</div>
+                            <div id="roll5" class="dice dice-available ">0</div>
                         </div>
                             <p>Remaining rolls: <span id='remaining_rolls'>3</span> </p>
                     </div>
-                    <div class="kniffel_win container" hidden>
-                        <h4>Buttons</h4>
+                    <div class="kniffel_win container" style='display: none'>
+                        <h4>Game Finished</h4>
+                        <p id='winningText'></p>
                         <button type="button" id="button_sheet_newGame" class="button">new Game</button>
-                        <p id='winningText'>game won!</p>
                     </div>
                 </div>
 
                 </div>
+                <list style='text-align: left; position: relative; left: 50%;'>
+                    <br>
+                        <li>to do:</li>
+                        <li>local multiplayer</li>
+                        <li>replace jQuery with vanilla javascript</li>
+                        <li>replace Bootstrap with w3CSS</li>
+                        <li>...</li>
+                </list>
             </div>
         </div>
     </div>
     </div>
-<list>
-    
-        <li>to do:</li>
-        <li>table-generierung weniger verallgemeinert</li>
-        <li>local multiplayer</li>
-        <li>...</li>
-</list>
 
 </body>
 
