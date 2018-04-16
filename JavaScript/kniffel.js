@@ -13,15 +13,15 @@ $(document).ready(function () {
     var remaining_rolls = 3;
 
     var classes = {
-        blockAll: 'kniffel sheet players',
+        blockAll: 'kniffel sheet players ',
         block1: function () {
-            return this.blockAll + " " + 'block1 clickable';
+            return this.blockAll + " " + 'block1 clickable ';
         },
         block2: function () {
-            return this.blockAll + " " + 'block2 auto';
+            return this.blockAll + " " + 'block2 auto ';
         },
         block3: function () {
-            return this.blockAll + " " + 'block3 clickable';
+            return this.blockAll + " " + 'block3 clickable ';
         },
     }
 
@@ -36,56 +36,62 @@ $(document).ready(function () {
             classBlock: classes.block1(),
             methode: 'matching',
             line: 'tl1',
+            sums: '1'
         },
         {
             name: "Zweier",
             classBlock: classes.block1(),
             methode: 'matching',
             line: 'tl2',
+            sums: '2'
         },
         {
             name: "Dreier",
             classBlock: classes.block1(),
             methode: 'matching',
             line: 'tl3',
+            sums: '3'
         },
         {
             name: "Vierer",
             classBlock: classes.block1(),
             methode: 'matching',
             line: 'tl4',
+            sums: '4'
         },
         {
             name: "Fünfer",
             classBlock: classes.block1(),
             methode: 'matching',
             line: 'tl5',
+            sums: '5'
         },
         {
             name: "Sechser",
             classBlock: classes.block1(),
             methode: 'matching',
             line: 'tl6',
+            sums: '6'
         },
         {
             name: "Summe oben",
-            classBlock: classes.block2(),
+            classBlock: classes.block2()+'sum_upper',
             methode: 'sum_sums',
             line: 'tl7',
             sums: '.block1.fixed',
         },
         {
             name: "Bonus bei 63 oder mehr",
-            classBlock: classes.block2(),
+            classBlock: classes.block2()+'bonus_upper',
             methode: 'bonus_oben',
             line: 'tl8',
         },
         {
             name: "gesamt oberer Teil",
-            classBlock: classes.block2(),
+            classBlock: classes.block2()+'total_upper0',
             methode: 'sum_sums',
             line: 'tl9',
-            sums: '#tl7_1, #tl8_1',
+            sums: '.sum_upper, .bonus_upper',
         },
         {
             name: "Dreierpasch",
@@ -131,24 +137,24 @@ $(document).ready(function () {
         },
         {
             name: "gesamt unterer Teil",
-            classBlock: classes.block2(),
+            classBlock: classes.block2()+'total_lower',
             methode: 'sum_sums',
             line: 'tl17',
             sums: '.block3.fixed',
         },
         {
             name: "gesamt oberer Teil",
-            classBlock: classes.block2(),
+            classBlock: classes.block2()+'total_upper',
             methode: 'sum_sums',
             line: 'tl18',
-            sums: '#tl7_1, #tl8_1',
+            sums: '.sum_upper, .bonus_upper',
         },
         {
             name: "Endsumme",
-            classBlock: classes.block2(),
+            classBlock: classes.block2()+'total_total',
             methode: 'sum_sums',
             line: 'tl19',
-            sums: '#tl17_1, #tl18_1',
+            sums: '.total_upper, .total_lower',
         },
     ]
 
@@ -163,19 +169,24 @@ $(document).ready(function () {
         newGame();
     })
 
-    /* When 'roll' button is clicked, roll dices, refresh remainingRolls-counter and fill the sheet */
+    /*  When 'roll' button is clicked:
+        - roll dices, 
+        - refresh remainingRolls-counter 
+        - mark click-able cells
+        - and fill the sheet */
     $('#button_roll').click(function () {
         roll();
         remainingRolls();
+        $(".player"+currentPlayer).not('fixed').addClass('active');
         fill();
     })
 
     /*  Click on a valid/active cell.
-        they give their information to function fixSelf and run it.
-        fixSelf returns flag whether all cells are filled so the game can be finished.
-        newTurn initiates new turn and/or end game. */
+        - cells give their information to function fixSelf and run it.
+        - fixSelf returns flag whether all cells are filled so the game can be finished.
+        - newTurn initiates new turn and/or end game. */
 
-    $("body").on('click', '.columns.active.clickable', function () {
+    $("body").on('click', '.columns.active.clickable.currentPlayer', function () {
         var endFlag = fixSelf($(this));
         newTurn(endFlag);
     })
@@ -194,8 +205,8 @@ $(document).ready(function () {
     */
 
     /*  Fixes a cell so its' value get thrown into calculations later.
-        Also, checks whether any moves are left (active cells) 
-        and returns a flag for potential end of the game */
+        - Also, checks whether any moves are left (active cells) 
+        - and returns a flag for potential end of the game */
     function fixSelf(thisObject) {
 
         $(thisObject).removeClass('active').addClass('fixed');
@@ -206,6 +217,7 @@ $(document).ready(function () {
     }
 
     /*  Ends last and initializes new turn:
+        - ends game if(!) last turn was literally "last" turn
         - activates roll-button
         - resets roll-counter
         - resets dice to default '-'
@@ -213,49 +225,33 @@ $(document).ready(function () {
     function newTurn(endFlag) {
         endFlag == 1 ? finishedGame() : 0;
 
-        console.log(currentPlayer);
-        currentPlayer = currentPlayer%player_amount+1;
-        console.log(currentPlayer);
-
-        
-
-    /*
-        for (var i=0; i<=50; i++){
-            console.log('__________', 'roll: '+i, '__________');
-            console.log('modulo1', i%1+1);
-            console.log('modulo2', i%2+1);
-            console.log('modulo3', i%3+1);
-            console.log('modulo4', i%4+1);
-        }
-    */
-
         $('#button_roll').prop('disabled', false);
         remaining_rolls = 3 + 1;
         remainingRolls();
         $('.dice').addClass('dice-available').text('-');
-        fill();
+        endFlag == 2 ? 0 : fill();          // at flag==2, fill() will be skipped. flag==2 occurs after newGame(), so fill() doesn't produce bugs with currentPlayer being 0.
+        $('.currentPlayer').removeClass('currentPlayer').removeClass('active');
+        currentPlayer = (currentPlayer % player_amount) + 1; //modulo-operation to cycle between several players
     }
-
+    
     /*  Ends last and initializes new game:
         - removes old table (easier then cleaning it)
         - generates new table
         - initializes new turn, see newTurn()
         - hides the win-Box */
     function newGame() {
-        player_amount = $('#player_count').val(); // get new player-count
-        console.log('newGame: ', player_amount);
+        player_amount = $('#player_count').val(); // get new player-count from the form-element
+        currentPlayer = 0;  //resets to 0, it increments to 1 during newTurn(). 
+        console.log('newGame: ', player_amount, 'player(s)');
         $('#table1').remove();
         generate_sheet();
-        newTurn();
         $('.kniffel_win').hide();
+        newTurn(2);
     }
 
     /*  Rolls the dices:
-        - activates not-fixed cells in sheet 
-        (to be used for multiplayer later, activating the current player instead of "all" columns)
-        - rolls dices and writes the numers down */
+        - rolls dices and writes the numbers down */
     function roll() {
-        $('td.players.columns').not('.fixed').addClass('active');
         numDices = $('.dice').length;
         if (numDices) {
             for (var i = 1; i <= numDices; i++) {
@@ -289,9 +285,9 @@ $(document).ready(function () {
         console.log(rollsArray);
 
         for (var i = 0; i < sheet.length; i++) {
+            $("#" + sheet[i].line + "_"+currentPlayer).addClass('currentPlayer');
             var x = allFunctions[sheet[i].methode](rollsArray, i) || 0;
-            $("#" + sheet[i].line + "_1").not('.fixed').text(x);
-
+            $("#" + sheet[i].line + "_"+currentPlayer).not('.fixed').text(x);
         }
     }
 
@@ -304,45 +300,22 @@ $(document).ready(function () {
         var table = $('<table>').attr('id', 'table1').addClass('table1');
         for (var i = 1; i < sheet.length; i++) {
             var newColumns = "<td class='" + sheet[i].classBlock + " categories'" + "id='" + sheet[i].line + "_" + j + "'>" + sheet[i].name + "</td>";
-            for ( j = 1; j <= player_amount; j++) {
-                newColumns += "<td class='" + sheet[i].classBlock + " columns player"+j+"'" + "id='" + sheet[i].line + "_" + j + "'>0</td>";
+            for (j = 1; j <= player_amount; j++) {
+                newColumns += "<td class='" + sheet[i].classBlock + " columns player" + j + "'" + "id='" + sheet[i].line + "_" + j + "'>0</td>";
             }
             var row = $('<tr>').addClass('rowClasses').append(newColumns);
             $(table).append(row);
         }
         $(".kniffel_sheet").append(table);
-        j=1;
+        j = 1;
     }
 
     /* Object with functions for all methods for all lines */
     var allFunctions = {
         matching: function (asdf, i) {
             asdf ? rollsArray = asdf : 0;
-            var z = 0;
-            switch (sheet[i].name) {
-                case 'Einer':
-                    z = 1;
-                    break;
-                case 'Zweier':
-                    z = 2;
-                    break;
-                case 'Dreier':
-                    z = 3;
-                    break;
-                case 'Vierer':
-                    z = 4;
-                    break;
-                case 'Fünfer':
-                    z = 5;
-                    break;
-                case 'Sechser':
-                    z = 6;
-                    break;
-                default:
-                    z = 0;
-            }
             var x = arraySum(rollsArray.filter(function (jk) {
-                return jk == z;
+                return jk == sheet[i].sums;
             }))
             return x;
 
@@ -385,11 +358,12 @@ $(document).ready(function () {
         kleineStraße: function (asdf) {
             asdf ? rollsArray = asdf : 0;
             var rollsArray = removeDuplicate(rollsArray);
-            if (rollsArray[0] === rollsArray[1] - 1 &&
-                rollsArray[0] === rollsArray[2] - 2 &&
-                rollsArray[0] === rollsArray[3] - 3) {
+            for (var i = 0; i<2; i++) {
+            if (rollsArray[i] === rollsArray[i+1] - 1 &&
+                rollsArray[i] === rollsArray[i+2] - 2 &&
+                rollsArray[i] === rollsArray[i+3] - 3) {
                 return 25;
-            }
+            }}
             return 0;
 
         },
@@ -421,19 +395,19 @@ $(document).ready(function () {
             return arraySum(rollsArray) || 0;
         },
         none: function () {
-            return 0;
+            return;
         },
         sum_sums: function (asdf, i) {
             let sum_current = 0;
             let found = $(sheet[i].sums);
             for (var i = 0; i < found.length; i++) {
-                sum_current += parseInt($('#' + found[i].id + '').html()) || 0;
+                sum_current += parseInt($('#' + found[i].id + '.currentPlayer').html()) || 0;
             }
             return sum_current;
         },
         bonus_oben: function () {
             let bonus_var = 0;
-            $('#tl7_1').text() >= 63 ? bonus_var = 35 : 0
+            $('#tl7_'+currentPlayer).text() >= 63 ? bonus_var = 35 : 0
             return bonus_var;
         },
     }
@@ -445,8 +419,11 @@ $(document).ready(function () {
     */
     function finishedGame() {
         $('div.container.kniffel_win').show();
-        let score = $('#tl19_1').html();
-        $('#winningText').text('Your score is: ' + score);
+            var winningTextString = '';    
+            for (var i = 1; i < player_amount && i <= 5; i++){
+                winningTextString += 'Player'+i+' scored: '+$('#tl19_'+i+'').html()+'<br>';
+            }            
+            $('#winningText').html(winningTextString);
 
     }
 
@@ -467,6 +444,7 @@ $(document).ready(function () {
         return sum;
     }
 
+    // copy paste aus'm netz
     function removeDuplicate(arr) {
         let unique_array = Array.from(new Set(arr));
         return unique_array;
@@ -478,28 +456,25 @@ $(document).ready(function () {
         - newTurn
     ------------------------------------------------------ 
     */
-   
-   newGame();
+
+    newGame();
 
     //generate_sheet();
     //newTurn();
 
 
-})
 
-
-    /* 
-    ------------------------------------------------------
-    storeroom/graveyard for testing-"tools" i'm too lazy to rewrite if i ever need them again
-    ------------------------------------------------------ 
-    */
-
+/* 
+------------------------------------------------------
+storeroom/graveyard for testing-"tools" i'm too lazy to rewrite if i ever need them again
+------------------------------------------------------ 
+*/
 
 /*
-var test = 0;
-test==1 ? test(): 0;
+var test = 1;
+test==1 ? test_sheet() : 0;
 
-function test() {
+function test_sheet() {
     var testForeign = [1, 2, 3, '-', 5];
     var testNone = [1, 2, 2, 3, 5];
     var test3er1 = [1, 2, 2, 4, 5]
@@ -508,7 +483,7 @@ function test() {
     var test4er2 = [1, 2, 2, 2, 2];
     var testFH1 = [1, 2, 2, 2, 5];
     var testFH2 = [1, 1, 2, 2, 2];
-    var testkS1 = [1, 2, 3, 5, 5];
+    var testkS1 = [1, 3, 4, 5, 6];
     var testkS2 = [1, 2, 2, 3, 4];
     var testgS1 = [1, 2, 3, 4, 5];
     var testgS2 = [2, 3, 4, 5, 6];
@@ -581,3 +556,7 @@ function test() {
 
     }
 */
+
+
+
+})

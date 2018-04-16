@@ -23,8 +23,8 @@ td.kniffel {
     text-align: center;
 
 }
-.dice.dice-fixed {
-    background: red;
+.dice {
+    background: rgba(255, 0, 0, 0.5);
 }
 .dice.dice-available {
     background: greenyellow;
@@ -62,6 +62,10 @@ td.columns {
 td.block2 {
     background: rgba(0, 0, 0, 0.2);
     font-weight: 700; 
+}
+.players.currentPlayer {
+    font-weight: 900;
+    font-style: italic;
 }
 .container {
     padding: 20px;

@@ -219,7 +219,7 @@ $(document).ready(function () {
 
         
 
-    /*
+    /* Schnipsel für multiplayer
         for (var i=0; i<=50; i++){
             console.log('__________', 'roll: '+i, '__________');
             console.log('modulo1', i%1+1);
