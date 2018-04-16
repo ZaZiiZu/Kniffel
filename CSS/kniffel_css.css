@@ -3,6 +3,7 @@ td.kniffel {
     border-style: solid;
     border-width: 1px;
     padding: 0 10px 0 10px;
+    min-width: 57px;
 }
 .kniffel_sheet {
     border-style: none;
@@ -16,11 +17,12 @@ td.kniffel {
     width: 48px;
     max-width: 48px;
     margin: 2px;
-    padding: 10px 0px;
     border: 1px;
+    padding: 0px;
     border-radius: 5px;
     border-style: solid;
     text-align: center;
+    font-size: 3em;
 
 }
 .dice {

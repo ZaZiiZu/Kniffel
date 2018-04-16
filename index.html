@@ -31,8 +31,16 @@
                     </div>
                 </div>
                 <div class="kniffel_right container col-5">
-                        <label for="player_count">Amount of players:</label>
-                        <input id='player_count' type='number' value='1' list='' placeholder='Players from 1 to over 9000' min='1' max='9001'>
+                    <list>
+                        <ul>
+                            <label for="player_count">Amount of players:</label>
+                            <input id='player_count' type='number' value='1' list='' placeholder='Players from 1 to over 9000' min='1' max='9001'>
+                        </ul>
+                        <ul>
+                            <label for="dice_sort">Sort the dice?</label>
+                            <input id='dice_sort' type='checkbox' value='0'>
+                        </ul>
+                    </list>
                     <button type="button" id="button_sheet_reset" class="button">reset</button>
                     
                     <div class="kniffel_rolls container">
@@ -61,7 +69,7 @@
                 <list style='text-align: left; position: relative; left: 50%;'>
                     <br>
                         <li>to do:</li>
-                        <li>replace jQuery with vanilla javascript</li>
+                        <li>replace jQuery with vanilla javascript (or, maybe not)</li>
                         <li>replace Bootstrap with w3CSS</li>
                         <li>...</li>
                 </list>
