@@ -9,7 +9,7 @@ $(document).ready(function () {
 
     var player_amount = 1; // 1 for now, multiplayer will be added later
     var currentPlayer = 0;
-    var numDices = 5;
+    // var numDices = 5;
     var remaining_rolls = 3;
 
     var classes = {
@@ -228,7 +228,7 @@ $(document).ready(function () {
         $('#button_roll').prop('disabled', false);
         remaining_rolls = 3 + 1;
         remainingRolls();
-        $('.dice').addClass('dice-available').text('-');
+        $('.dice').addClass('dice-available').text('-').data('dice_value','-');
         endFlag == 2 ? 0 : fill(); // at flag==2, fill() will be skipped. flag==2 occurs after newGame(), so fill() doesn't produce bugs with currentPlayer being 0.
         $('.currentPlayer').removeClass('currentPlayer').removeClass('active');
         currentPlayer = (currentPlayer % player_amount) + 1; //modulo-operation to cycle between several players
@@ -248,32 +248,33 @@ $(document).ready(function () {
         $('.kniffel_win').hide();
         newTurn(2);
     }
-    
+
     // no easy/obvious way to get rid of this global variable for now
     var rollsArray = [];
 
     /*  Rolls the dices:
-            - rolls dices and writes the numbers down */
+                - rolls dices and writes the numbers into the element as: integer into dataset, unicode into html 
+                - a for-loop gets the string of numbers from the dataset
+                - rollsArray becomes the (sorted) array of those numbers 
+                - if sort-dice is checked, re-arranges the visual dices (only if no dices are fixed. too much workaround to fix that) */
     function roll() {
-        numDices = $('.dice').length;
+        var numDices = $('.dice').length;
         if (numDices) {
             for (var i = 1; i <= numDices; i++) {
                 let k = Math.floor(Math.random() * 6) + 1;
                 $('#roll' + i + '.dice-available').html(charDice(k)).data('dice_value', k);
-                rollsArray[i-1] = k;
             }
-        }
+           
+            rollsArray = getRollsArray();
 
-
-
-        if ($('#dice_sort:checked').length) {
-            var string = $('.dice').data('dice_value').replace(/[-]/g, '');
-            rollsArray = getArray(string);
-            for (var i = 1; i <= numDices; i++) {
-                $('#roll' + i + '.dice-available').html(charDice(k)).data('dice_value', k);
+            if ($('#dice_sort:checked').length && $('.dice-available').length==$('.dice').length) {
+                for (var i = 1; i <= numDices; i++) {
+                    $('#roll' + i + '').html(charDice(rollsArray[i - 1])).data('dice_value', rollsArray[i - 1]);
+                }
             }
         }
     }
+
 
     /*  keeps track of rolls, deactivates roll-Button when it's time */
     function remainingRolls() {
@@ -292,18 +293,21 @@ $(document).ready(function () {
     function fill() {
 
         var x;
+        rollsArray = getRollsArray();
         /*
         var string = $('.dice').data('dice_value');
         console.log(string);
         string = string.replace(/[-]/g, '');
-        rollsArray = getArray(string); 
+        rollsArray = getRollsArray(string); 
         */
-        console.log(rollsArray);
+        console.log('rollsArray: ', rollsArray);
 
         for (var i = 0; i < sheet.length; i++) {
             $("#" + sheet[i].line + "_" + currentPlayer).addClass('currentPlayer');
             var x = allFunctions[sheet[i].methode](rollsArray, i) || 0;
+            console.log('loop: ', i, sheet[i].methode, x, rollsArray);
             $("#" + sheet[i].line + "_" + currentPlayer).not('.fixed').text(x);
+
         }
     }
 
@@ -316,13 +320,13 @@ $(document).ready(function () {
 
         var table = $('<table>').attr('id', 'table1').addClass('table1');
         for (var i = 1; i < sheet.length; i++) {
-            var newColumns = "<td class='" + sheet[i].classBlock + " categories'" + "id='" + sheet[i].line + "_" + j + "'>" + sheet[i].name + "</td>";
+            var newColumns = "<td class='" + sheet[i].classBlock + " categories'" + "id='" + sheet[i].line + "_" + 0 + "'>" + sheet[i].name + "</td>";
             for (j = 1; j <= player_amount; j++) {
                 newColumns += "<td class='" + sheet[i].classBlock + " columns player" + j + "'" + "id='" + sheet[i].line + "_" + j + "'>0</td>";
             }
             if (idle) {
-                for (j = 0; j < idle; j++) {
-                    newColumns += "<td class='" + sheet[i].classBlock + " idle'" + "id='" + sheet[i].line + "_idle" + j + "'></td>";
+                for (j; j < (parseInt(idle) + parseInt(player_amount) + 1); j++) {
+                    newColumns += "<td class='" + sheet[i].classBlock + " idle'" + "id='" + sheet[i].line + "_" + j + "'></td>";
                 }
             }
             var row = $('<tr>').addClass('rowClasses').append(newColumns);
@@ -413,7 +417,7 @@ $(document).ready(function () {
             }
             return 0;
         },
-        Chance: function (asdf) {
+        Chance: function (asdf) {            
             asdf ? rollsArray = asdf : 0;
             return arraySum(rollsArray) || 0;
         },
@@ -422,10 +426,13 @@ $(document).ready(function () {
         },
         sum_sums: function (asdf, i) {
             let sum_current = 0;
-            let found = $(sheet[i].sums);
+            let found = $(sheet[i].sums + '.currentPlayer');
+            console.log('found current: ', found.length)
+            console.log('current found: ', sheet[i].name, $(found).length, sheet[i].sums);
             for (var i = 0; i < found.length; i++) {
                 sum_current += parseInt($('#' + found[i].id + '.currentPlayer').html()) || 0;
             }
+            console.log('current sum_sums: ', sum_current);
             return sum_current;
         },
         bonus_oben: function () {
@@ -443,14 +450,15 @@ $(document).ready(function () {
     function finishedGame() {
         $('div.container.kniffel_win').show();
         var winningTextString = '';
-        for (var i = 1; i <= player_amount+1 && i <= 4; i++) {
+        for (var i = 1; i <= Math.min(player_amount, 4); i++) {
             winningTextString += 'Player' + i + ' scored: ' + $('#tl19_' + i + '').html() + '<br>';
         }
         $('#winningText').html(winningTextString);
 
     }
+
     function charDice(asdf) {
-        console.log(asdf);
+        //console.log(asdf);
         if (Number.isInteger(asdf)) {
             switch (asdf) {
                 case 1:
@@ -505,7 +513,12 @@ $(document).ready(function () {
         return asdf;
     }
 
-    function getArray(string) {
+    function getRollsArray() {
+        let string ='';
+        let numDices = $('.dice').length;
+        for (var i = 1; i <= numDices; i++) {
+            string += $('#roll' + i).data('dice_value');
+        }
         rollsArray = string.split('').sort();
         for (var i = 0; i < rollsArray.length; i++) {
             rollsArray[i] = parseInt(rollsArray[i]);
