@@ -1,4 +1,4 @@
-td.kniffel {
+.table1 td {
     border: 1px;
     border-style: solid;
     border-width: 1px;
@@ -59,7 +59,7 @@ td.columns {
     padding: 0 15px 0 15px;
     font-weight: 600; 
 }
-.players.fixed {
+.table1 td.fixed {
     background: rgba(0, 0, 0, 0.2);
 }
 
@@ -67,7 +67,7 @@ td.block2 {
     background: rgba(0, 0, 0, 0.2);
     font-weight: 700; 
 }
-.players.currentPlayer {
+.table1 td.currentPlayer {
     font-weight: 900;
     font-style: italic;
 }

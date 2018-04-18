@@ -23,7 +23,7 @@ $(document).ready(function () {
 
     // helper for sheet, bundles classes for created table-rows/cells
     var classes = {
-        blockAll: 'kniffel sheet players ',
+        blockAll: '  ',
         block1: function () {
             return this.blockAll + " " + 'block1 clickable ';
         },
@@ -201,7 +201,7 @@ $(document).ready(function () {
     $('#button_roll').click(function () {
         roll();
         remainingRolls();
-        $(".player" + currentPlayer).not('fixed').addClass('active');
+        $(".player" + currentPlayer).not('.fixed').addClass('active');
         fill();
         $('#button_undo').prop('disabled', true);
 
@@ -223,7 +223,7 @@ $(document).ready(function () {
         $('#button_undo').prop('disabled', true);
         currentPlayer = lastTurn.player;
         $(lastTurn.cell).removeClass('fixed');
-        $(".player" + lastTurn.player).not('fixed').addClass('active');
+        $(".player" + lastTurn.player).not('.fixed').addClass('active');
         fill(lastTurn.rolls) //works without parameter, too, since dices don't reset until new roll. Parameter is just in case
     })
 
@@ -233,7 +233,7 @@ $(document).ready(function () {
         - saves the pointer to this cell under lastTurn for the undo-function
         - newTurn initiates new turn and/or game end
         - enables the undo-button to be used */
-    $("body").on('click', '.columns.active.clickable.currentPlayer', function () {
+    $("body").on('click', '.active.clickable.currentPlayer', function () {
         let endFlag = fixSelf($(this));
         lastTurn.cell = this;
         newTurn(endFlag);
@@ -258,7 +258,7 @@ $(document).ready(function () {
         - and returns a flag for potential end of the game */
     function fixSelf(thisObject) {
         $(thisObject).removeClass('active').addClass('fixed');
-        $('.players.active').removeClass('active');
+        $('.currentPlayer.active').removeClass('active');
         let x = $(".columns.clickable").not('.fixed').length;
         return x == 0 ? 1 : 0;
     }
