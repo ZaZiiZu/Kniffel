@@ -11,6 +11,14 @@ $(document).ready(function () {
     var currentPlayer = 0;
     // var numDices = 5;
     var remaining_rolls = 3;
+    var lastTurn = {
+        rolls: '',
+        player: '',
+        cell: '',
+    }
+    
+    // no easy/obvious way to get rid of this global variable for now
+    var rollsArray = [];
 
     var classes = {
         blockAll: 'kniffel sheet players ',
@@ -179,7 +187,24 @@ $(document).ready(function () {
         remainingRolls();
         $(".player" + currentPlayer).not('fixed').addClass('active');
         fill();
-    })
+        $('#button_undo').prop('disabled', true);
+
+    }) 
+
+    /*  Undo last pick:
+        - uses lastPlayer object
+        - feeds last rolls to fill() to get the last */
+$('#button_undo').click(function () {
+    let thisObject = lastTurn.cell;
+    rollsArray = lastTurn.rolls;
+    currentPlayer = lastTurn.player;
+
+    $('#button_undo').prop('disabled', true);
+    $(thisObject).removeClass('fixed').addClass('active');
+    $(".player" + currentPlayer).not('fixed').addClass('active');
+    fill(rollsArray)
+    
+})
 
     /*  Click on a valid/active cell.
         - cells give their information to function fixSelf and run it.
@@ -187,8 +212,10 @@ $(document).ready(function () {
         - newTurn initiates new turn and/or end game. */
 
     $("body").on('click', '.columns.active.clickable.currentPlayer', function () {
-        var endFlag = fixSelf($(this));
+        let endFlag = fixSelf($(this));
+        lastTurn.cell = this;
         newTurn(endFlag);
+        $('#button_undo').prop('disabled', false);
     })
 
     /*  Click on not-fixed dice to fix */
@@ -208,7 +235,7 @@ $(document).ready(function () {
         - Also, checks whether any moves are left (active cells) 
         - and returns a flag for potential end of the game */
     function fixSelf(thisObject) {
-
+        
         $(thisObject).removeClass('active').addClass('fixed');
         $('.players.active').removeClass('active');
 
@@ -249,8 +276,6 @@ $(document).ready(function () {
         newTurn(2);
     }
 
-    // no easy/obvious way to get rid of this global variable for now
-    var rollsArray = [];
 
     /*  Rolls the dices:
                 - rolls dices and writes the numbers into the element as: integer into dataset, unicode into html 
@@ -266,12 +291,15 @@ $(document).ready(function () {
             }
            
             rollsArray = getRollsArray();
+            lastTurn.rolls = rollsArray;
+            lastTurn.player = currentPlayer;
 
             if ($('#dice_sort:checked').length && $('.dice-available').length==$('.dice').length) {
                 for (var i = 1; i <= numDices; i++) {
                     $('#roll' + i + '').html(charDice(rollsArray[i - 1])).data('dice_value', rollsArray[i - 1]);
                 }
             }
+
         }
     }
 
@@ -290,22 +318,15 @@ $(document).ready(function () {
         - puts dice-rolls into a usable Array
         - goes through the sheet-object and runs individual methods for all the lines
         - while in loop, fills the sheet with those calculated numbers */
-    function fill() {
-
+    function fill(rollsOverride) {
         var x;
-        rollsArray = getRollsArray();
-        /*
-        var string = $('.dice').data('dice_value');
-        console.log(string);
-        string = string.replace(/[-]/g, '');
-        rollsArray = getRollsArray(string); 
-        */
+        rollsOverride ? rollsArray = rollsOverride : rollsArray = getRollsArray();
+        //rollsArray = getRollsArray();
         console.log('rollsArray: ', rollsArray);
 
         for (var i = 0; i < sheet.length; i++) {
             $("#" + sheet[i].line + "_" + currentPlayer).addClass('currentPlayer');
             var x = allFunctions[sheet[i].methode](rollsArray, i) || 0;
-            console.log('loop: ', i, sheet[i].methode, x, rollsArray);
             $("#" + sheet[i].line + "_" + currentPlayer).not('.fixed').text(x);
 
         }
@@ -427,12 +448,9 @@ $(document).ready(function () {
         sum_sums: function (asdf, i) {
             let sum_current = 0;
             let found = $(sheet[i].sums + '.currentPlayer');
-            console.log('found current: ', found.length)
-            console.log('current found: ', sheet[i].name, $(found).length, sheet[i].sums);
             for (var i = 0; i < found.length; i++) {
                 sum_current += parseInt($('#' + found[i].id + '.currentPlayer').html()) || 0;
             }
-            console.log('current sum_sums: ', sum_current);
             return sum_current;
         },
         bonus_oben: function () {
