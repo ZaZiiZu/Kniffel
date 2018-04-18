@@ -9,7 +9,8 @@ td.kniffel {
     border-style: none;
 }
 .button {
-    margin: 15px; 
+    margin: 15px;
+    width: 125px; 
 }
 .dice {
     height: 48px;
@@ -17,7 +18,7 @@ td.kniffel {
     width: 48px;
     max-width: 48px;
     margin: 2px;
-    border: 1px;
+    border: 0px;
     padding: 0px;
     border-radius: 5px;
     border-style: solid;
@@ -30,7 +31,7 @@ td.kniffel {
     background: rgba(255, 0, 0, 0.5);
 }
 .dice.dice-available {
-    background: greenyellow;
+    background: rgba(172, 255, 47, 0);
 }
 
 div .table1 {

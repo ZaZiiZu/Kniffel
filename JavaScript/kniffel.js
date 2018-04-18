@@ -15,6 +15,7 @@ $(document).ready(function () {
         rolls: '',
         player: '',
         cell: '',
+        remainingRolls: '',
     }
     
     // no easy/obvious way to get rid of this global variable for now
@@ -189,20 +190,33 @@ $(document).ready(function () {
         fill();
         $('#button_undo').prop('disabled', true);
 
+
+        
+        lastTurn.rolls = rollsArray;
+        lastTurn.player = currentPlayer;
+        lastTurn.remainingRolls = remaining_rolls;
+        console.log('remaining rolls: ', lastTurn.remainingRolls)
+
     }) 
 
     /*  Undo last pick:
-        - uses lastPlayer object
-        - feeds last rolls to fill() to get the last */
+        - uses lastPlayer object to get last turns' parameters
+        - disables undo-button (until cell-click activates it again)
+        - un-fixes the last fixed element and activates it
+        - activates any un-fixed elements of "last"->current player
+        - feeds last rolls to fill() to complete the undo-function */
 $('#button_undo').click(function () {
+    console.log('undo-object: ', lastTurn)
     let thisObject = lastTurn.cell;
     rollsArray = lastTurn.rolls;
     currentPlayer = lastTurn.player;
+    remaining_rolls = lastTurn.remainingRolls+1;
+    remainingRolls();
 
     $('#button_undo').prop('disabled', true);
-    $(thisObject).removeClass('fixed').addClass('active');
+    $(thisObject).removeClass('fixed');
     $(".player" + currentPlayer).not('fixed').addClass('active');
-    fill(rollsArray)
+    fill(rollsArray)                                        /// BUG: remaining rolls need fix (otherwise unlimited turns)
     
 })
 
@@ -255,8 +269,8 @@ $('#button_undo').click(function () {
         $('#button_roll').prop('disabled', false);
         remaining_rolls = 3 + 1;
         remainingRolls();
-        $('.dice').addClass('dice-available').text('-').data('dice_value','-');
-        endFlag == 2 ? 0 : fill(); // at flag==2, fill() will be skipped. flag==2 occurs after newGame(), so fill() doesn't produce bugs with currentPlayer being 0.
+        $('.dice').addClass('dice-available');
+        endFlag == 2 ? 0 : fill([0,0,0,0,0]); // at flag==2, fill() will be skipped. flag==2 occurs after newGame(), so fill() doesn't produce bugs with currentPlayer being 0.
         $('.currentPlayer').removeClass('currentPlayer').removeClass('active');
         currentPlayer = (currentPlayer % player_amount) + 1; //modulo-operation to cycle between several players
     }
@@ -286,31 +300,41 @@ $('#button_undo').click(function () {
         var numDices = $('.dice').length;
         if (numDices) {
             for (var i = 1; i <= numDices; i++) {
-                let k = Math.floor(Math.random() * 6) + 1;
-                $('#roll' + i + '.dice-available').html(charDice(k)).data('dice_value', k);
+                let k = Math.floor(Math.random() * 6) + 1;                
+                let angle = Math.floor(Math.random() * 360) + 1;
+                angle = angle+'deg';         
+                let translX = Math.floor(Math.random() * 10) + 1;  
+                translX = translX+'px';       
+                let translY = Math.floor(Math.random() * 10) + 1;  
+                translY = translY+'px';       
+                $('#roll' + i + '.dice-available').html(charDice(k)).data('dice_value', k).css('transform', 'rotate('+angle+') translate('+translX+', '+translY+')');
             }
            
             rollsArray = getRollsArray();
-            lastTurn.rolls = rollsArray;
-            lastTurn.player = currentPlayer;
 
             if ($('#dice_sort:checked').length && $('.dice-available').length==$('.dice').length) {
                 for (var i = 1; i <= numDices; i++) {
                     $('#roll' + i + '').html(charDice(rollsArray[i - 1])).data('dice_value', rollsArray[i - 1]);
                 }
-            }
+            }            
 
         }
     }
 
 
-    /*  keeps track of rolls, deactivates roll-Button when it's time */
+    /*  keeps track of rolls:
+        - deactivates roll-Button when it's time 
+        - adjusts the button-text */
     function remainingRolls() {
         remaining_rolls--;
         $('#remaining_rolls').text(remaining_rolls);
         if (remaining_rolls <= 0) {
-            $('#button_roll').prop('disabled', true);
+            $('#button_roll').prop('disabled', true).text('no rolls left');
         }
+        else if (remaining_rolls == 3) {
+            $('#button_roll').text('New Turn!');
+        }
+        else {$('#button_roll').text('roll!');}
     }
 
 

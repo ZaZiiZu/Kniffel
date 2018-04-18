@@ -52,11 +52,12 @@
                         <button type="button" id="button_nextTurn" class="button roll">next turn!</button>                        
                         --> 
                         <div class="row">
-                            <div id="roll1" class="dice dice-available col">0</div>
-                            <div id="roll2" class="dice dice-available col">0</div>
-                            <div id="roll3" class="dice dice-available col">0</div>
-                            <div id="roll4" class="dice dice-available col">0</div>
-                            <div id="roll5" class="dice dice-available col">0</div>
+                            <div id="roll1" class="dice dice-available col" style='transform: rotate(30deg)'></div>
+                            <div id="roll2" class="dice dice-available col" style='transform: rotate(160deg)'></div>
+                            <div id="roll3" class="dice dice-available col" style='transform: rotate(-30deg)'></div>
+                        </div><div class="row">
+                            <div id="roll4" class="dice dice-available col" style='transform: rotate(90deg)'></div>
+                            <div id="roll5" class="dice dice-available col" style='transform: rotate(-60deg)'></div>
                         </div>
                             <p>Remaining rolls: <span id='remaining_rolls'>3</span> </p>
                     </div>
@@ -71,8 +72,7 @@
                 <list style='text-align: left; position: relative; left: 50%;'>
                     <br>
                         <li>to do:</li>
-                        <li>replace jQuery with vanilla javascript (or, maybe not)</li>
-                        <li>replace Bootstrap with w3CSS</li>
+                        <li>sort out the (useless) classes</li>
                         <li>...</li>
                 </list>
             </div>
