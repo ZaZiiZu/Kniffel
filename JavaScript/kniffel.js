@@ -7,20 +7,21 @@ $(document).ready(function () {
         ------------------------------------------------------------------------------------------------------------
     */
 
-    var player_amount = 1; // 1 for now, multiplayer will be added later
-    var currentPlayer = 0;
-    // var numDices = 5;
-    var remaining_rolls = 3;
+    var player_amount; // gets the value from html-input 
+    var currentPlayer; // has to start at 0 (or blank)
+    var remaining_rolls; // gets the value during newTurn (included in newGame)
+
+    var rollsArray = []; // no easy/obvious way to get rid of this "global" variable for now
+
+    // to make "Undo select" work
     var lastTurn = {
         rolls: '',
         player: '',
         cell: '',
         remainingRolls: '',
     }
-    
-    // no easy/obvious way to get rid of this global variable for now
-    var rollsArray = [];
 
+    // helper for sheet, bundles classes for created table-rows/cells
     var classes = {
         blockAll: 'kniffel sheet players ',
         block1: function () {
@@ -34,6 +35,7 @@ $(document).ready(function () {
         },
     }
 
+    // has all the info about the rows, used to create and fill the table
     var sheet = [{
             name: "-",
             classBlock: classes.blockAll + ' header',
@@ -139,10 +141,22 @@ $(document).ready(function () {
             line: 'tl15',
         },
         {
-            name: "Chance",
+            name: "Chance1",
             classBlock: classes.block3(),
             methode: 'Chance',
             line: 'tl16',
+        },
+        {
+            name: "Chance2",
+            classBlock: classes.block3(),
+            methode: 'Chance',
+            line: 'tl120',
+        },
+        {
+            name: "Chance3",
+            classBlock: classes.block3(),
+            methode: 'Chance',
+            line: 'tl21',
         },
         {
             name: "gesamt unterer Teil",
@@ -155,7 +169,7 @@ $(document).ready(function () {
             name: "gesamt oberer Teil",
             classBlock: classes.block2() + 'total_upper',
             methode: 'sum_sums',
-            line: 'tl18',
+            line: 'tl99',
             sums: '.sum_upper, .bonus_upper',
         },
         {
@@ -182,7 +196,8 @@ $(document).ready(function () {
         - roll dices, 
         - refresh remainingRolls-counter 
         - mark click-able cells
-        - and fill the sheet */
+        - fill the sheet 
+        - and save needed information as lastTurn */
     $('#button_roll').click(function () {
         roll();
         remainingRolls();
@@ -190,41 +205,34 @@ $(document).ready(function () {
         fill();
         $('#button_undo').prop('disabled', true);
 
-
-        
         lastTurn.rolls = rollsArray;
         lastTurn.player = currentPlayer;
         lastTurn.remainingRolls = remaining_rolls;
-        console.log('remaining rolls: ', lastTurn.remainingRolls)
-
-    }) 
+    })
 
     /*  Undo last pick:
-        - uses lastPlayer object to get last turns' parameters
+        - get remaining rolls from last turn (the +1 evens the decrement during remainingRolls)
         - disables undo-button (until cell-click activates it again)
-        - un-fixes the last fixed element and activates it
+        - un-fixes the last fixed element
+        - rolls back currentPlayer (because fixing a cell instantly jumps to next player via newTurn)
         - activates any un-fixed elements of "last"->current player
         - feeds last rolls to fill() to complete the undo-function */
-$('#button_undo').click(function () {
-    console.log('undo-object: ', lastTurn)
-    let thisObject = lastTurn.cell;
-    rollsArray = lastTurn.rolls;
-    currentPlayer = lastTurn.player;
-    remaining_rolls = lastTurn.remainingRolls+1;
-    remainingRolls();
-
-    $('#button_undo').prop('disabled', true);
-    $(thisObject).removeClass('fixed');
-    $(".player" + currentPlayer).not('fixed').addClass('active');
-    fill(rollsArray)                                        /// BUG: remaining rolls need fix (otherwise unlimited turns)
-    
-})
+    $('#button_undo').click(function () {
+        remaining_rolls = lastTurn.remainingRolls + 1;
+        remainingRolls();
+        $('#button_undo').prop('disabled', true);
+        currentPlayer = lastTurn.player;
+        $(lastTurn.cell).removeClass('fixed');
+        $(".player" + lastTurn.player).not('fixed').addClass('active');
+        fill(lastTurn.rolls) //works without parameter, too, since dices don't reset until new roll. Parameter is just in case
+    })
 
     /*  Click on a valid/active cell.
-        - cells give their information to function fixSelf and run it.
-        - fixSelf returns flag whether all cells are filled so the game can be finished.
-        - newTurn initiates new turn and/or end game. */
-
+        - fixes the clicked cell and returns flag(endFlag) on whether it was last cell to fix
+        - fixSelf also deactivates other cells to prevent useless clicks
+        - saves the pointer to this cell under lastTurn for the undo-function
+        - newTurn initiates new turn and/or game end
+        - enables the undo-button to be used */
     $("body").on('click', '.columns.active.clickable.currentPlayer', function () {
         let endFlag = fixSelf($(this));
         lastTurn.cell = this;
@@ -232,8 +240,8 @@ $('#button_undo').click(function () {
         $('#button_undo').prop('disabled', false);
     })
 
-    /*  Click on not-fixed dice to fix */
-    $('body').on('click', '.dice:not(:contains("-"))', function () {
+    /*  Click on dice to toggle fix */
+    $('body').on('click', '.dice', function () {
         let thisObject = $(this);
         $(thisObject).toggleClass('dice-available');
     })
@@ -249,28 +257,28 @@ $('#button_undo').click(function () {
         - Also, checks whether any moves are left (active cells) 
         - and returns a flag for potential end of the game */
     function fixSelf(thisObject) {
-        
         $(thisObject).removeClass('active').addClass('fixed');
         $('.players.active').removeClass('active');
-
-        var x = $(".columns.clickable").not('.fixed').length;
+        let x = $(".columns.clickable").not('.fixed').length;
         return x == 0 ? 1 : 0;
     }
 
     /*  Ends last and initializes new turn:
-        - ends game if(!) last turn was literally "last" turn
+        - ends game if(!) last turn was literally "last" turn, flagged as endFlag==1
         - activates roll-button
         - resets roll-counter
-        - resets dice to default '-'
-        - recalculates the sheet */
+        - recalculates the sheet with a rollArray of an empty array (either [] or [0,...,0]) (so it only does the sum-functions)
+            array of zeros instantly exits the calculation-functions with returns of 0. so they do not trigger yahzee/kniffel or full-house 
+        - deactivates any clickable cells and removes cleans up currentPlayer-tags
+        - cycles to next player via modulo-operation */
     function newTurn(endFlag) {
         endFlag == 1 ? finishedGame() : 0;
-
         $('#button_roll').prop('disabled', false);
         remaining_rolls = 3 + 1;
         remainingRolls();
         $('.dice').addClass('dice-available');
-        endFlag == 2 ? 0 : fill([0,0,0,0,0]); // at flag==2, fill() will be skipped. flag==2 occurs after newGame(), so fill() doesn't produce bugs with currentPlayer being 0.
+        // at flag==2, fill() will be skipped. flag==2 occurs after newGame(), so fill() doesn't produce bugs with currentPlayer being 0.
+        endFlag == 2 ? 0 : fill([]); 
         $('.currentPlayer').removeClass('currentPlayer').removeClass('active');
         currentPlayer = (currentPlayer % player_amount) + 1; //modulo-operation to cycle between several players
     }
@@ -278,49 +286,39 @@ $('#button_undo').click(function () {
     /*  Ends last and initializes new game:
         - removes old table (easier then cleaning it)
         - generates new table
-        - initializes new turn, see newTurn()
-        - hides the win-Box */
+        - hides the win-Box 
+        - initializes new turn, see newTurn() with the flag 2 to skip fill() */
     function newGame() {
         player_amount = $('#player_count').val(); // get new player-count from the form-element
         currentPlayer = 0; //resets to 0, it increments to 1 during newTurn(). 
-        console.log('newGame: ', player_amount, 'player(s)');
         $('#table1').remove();
         generate_sheet();
         $('.kniffel_win').hide();
         newTurn(2);
     }
 
-
     /*  Rolls the dices:
-                - rolls dices and writes the numbers into the element as: integer into dataset, unicode into html 
-                - a for-loop gets the string of numbers from the dataset
-                - rollsArray becomes the (sorted) array of those numbers 
-                - if sort-dice is checked, re-arranges the visual dices (only if no dices are fixed. too much workaround to fix that) */
+        - rolls dices and writes the numbers into the element as: integer into dataset, unicode into html 
+        - getRollsArray has a for-loop to read out the data-set of all the dices, returns sorted array with rolls. 
+        - if sort-dice is checked, re-arranges the visual dices (only if no dices are fixed. too much workaround to fix that) */
     function roll() {
         var numDices = $('.dice').length;
         if (numDices) {
             for (var i = 1; i <= numDices; i++) {
-                let k = Math.floor(Math.random() * 6) + 1;                
-                let angle = Math.floor(Math.random() * 360) + 1;
-                angle = angle+'deg';         
-                let translX = Math.floor(Math.random() * 10) + 1;  
-                translX = translX+'px';       
-                let translY = Math.floor(Math.random() * 10) + 1;  
-                translY = translY+'px';       
-                $('#roll' + i + '.dice-available').html(charDice(k)).data('dice_value', k).css('transform', 'rotate('+angle+') translate('+translX+', '+translY+')');
+                let k = Math.floor(Math.random() * 6) + 1;
+                let transformArg = diceTransform(); // just some visuals: adds random rotation and translation on x- and y-axis 
+                $('#roll' + i + '.dice-available').html(charDice(k)).data('dice_value', k).css('transform', transformArg);
             }
-           
+
             rollsArray = getRollsArray();
 
-            if ($('#dice_sort:checked').length && $('.dice-available').length==$('.dice').length) {
+            if ($('#dice_sort:checked').length && $('.dice-available').length == $('.dice').length) {
                 for (var i = 1; i <= numDices; i++) {
                     $('#roll' + i + '').html(charDice(rollsArray[i - 1])).data('dice_value', rollsArray[i - 1]);
                 }
-            }            
-
+            }
         }
     }
-
 
     /*  keeps track of rolls:
         - deactivates roll-Button when it's time 
@@ -329,30 +327,24 @@ $('#button_undo').click(function () {
         remaining_rolls--;
         $('#remaining_rolls').text(remaining_rolls);
         if (remaining_rolls <= 0) {
-            $('#button_roll').prop('disabled', true).text('no rolls left');
+            $('#button_roll').prop('disabled', true).text('No rolls left');
+        } else if (remaining_rolls == 3) {
+            $('#button_roll').text('New Turn');
+        } else {
+            $('#button_roll').text('Roll');
         }
-        else if (remaining_rolls == 3) {
-            $('#button_roll').text('New Turn!');
-        }
-        else {$('#button_roll').text('roll!');}
     }
 
-
     /*  That's where the magic happens:
-        - puts dice-rolls into a usable Array
+        - creates rollsArray either from the rolls, or from overridden pre-set
         - goes through the sheet-object and runs individual methods for all the lines
         - while in loop, fills the sheet with those calculated numbers */
     function fill(rollsOverride) {
-        var x;
         rollsOverride ? rollsArray = rollsOverride : rollsArray = getRollsArray();
-        //rollsArray = getRollsArray();
-        console.log('rollsArray: ', rollsArray);
-
-        for (var i = 0; i < sheet.length; i++) {
+        for (let i = 0; i < sheet.length; i++) {
             $("#" + sheet[i].line + "_" + currentPlayer).addClass('currentPlayer');
-            var x = allFunctions[sheet[i].methode](rollsArray, i) || 0;
+            let x = allFunctions[sheet[i].methode](rollsArray, i) || 0;
             $("#" + sheet[i].line + "_" + currentPlayer).not('.fixed').text(x);
-
         }
     }
 
@@ -360,12 +352,12 @@ $('#button_undo').click(function () {
         - similar as above: generates table based on sheet-Object
         - creates the table "in air", and appends to a specific div when it's generated */
     function generate_sheet() {
-        var j = 0;
-        var idle = Math.max(4 - player_amount, 0);
+        let j = 0;
+        let idle = Math.max(4 - player_amount, 0);
 
-        var table = $('<table>').attr('id', 'table1').addClass('table1');
-        for (var i = 1; i < sheet.length; i++) {
-            var newColumns = "<td class='" + sheet[i].classBlock + " categories'" + "id='" + sheet[i].line + "_" + 0 + "'>" + sheet[i].name + "</td>";
+        let table = $('<table>').attr('id', 'table1').addClass('table1');
+        for (let i = 1; i < sheet.length; i++) {
+            let newColumns = "<td class='" + sheet[i].classBlock + " categories'" + "id='" + sheet[i].line + "_" + 0 + "'>" + sheet[i].name + "</td>";
             for (j = 1; j <= player_amount; j++) {
                 newColumns += "<td class='" + sheet[i].classBlock + " columns player" + j + "'" + "id='" + sheet[i].line + "_" + j + "'>0</td>";
             }
@@ -374,18 +366,17 @@ $('#button_undo').click(function () {
                     newColumns += "<td class='" + sheet[i].classBlock + " idle'" + "id='" + sheet[i].line + "_" + j + "'></td>";
                 }
             }
-            var row = $('<tr>').addClass('rowClasses').append(newColumns);
+            let row = $('<tr>').addClass('rowClasses').append(newColumns);
             $(table).append(row);
         }
         $(".kniffel_sheet").append(table);
-        j = 1;
     }
 
     /* Object with functions for all methods for all lines */
     var allFunctions = {
         matching: function (asdf, i) {
             asdf ? rollsArray = asdf : 0;
-            var x = arraySum(rollsArray.filter(function (jk) {
+            let x = arraySum(rollsArray.filter(function (jk) {
                 return jk == sheet[i].sums;
             }))
             return x;
@@ -393,7 +384,7 @@ $('#button_undo').click(function () {
         },
         dreierPasch: function (asdf) {
             asdf ? rollsArray = asdf : 0;
-            for (var i = 0; i < 3; i++) {
+            for (let i = 0; i < 3; i++) {
                 if (
                     rollsArray[i] === rollsArray[i + 1] &&
                     rollsArray[i] === rollsArray[i + 2]) {
@@ -404,7 +395,7 @@ $('#button_undo').click(function () {
         },
         viererPasch: function (asdf) {
             asdf ? rollsArray = asdf : 0;
-            for (var i = 0; i < 2; i++) {
+            for (let i = 0; i < 2; i++) {
                 if (/[1-6]/g.test(rollsArray) &&
                     rollsArray[i] === rollsArray[i + 1] &&
                     rollsArray[i] === rollsArray[i + 2] &&
@@ -413,7 +404,6 @@ $('#button_undo').click(function () {
                 }
             }
             return 0;
-
         },
         fullHouse: function (asdf) {
             asdf ? rollsArray = asdf : 0;
@@ -424,12 +414,11 @@ $('#button_undo').click(function () {
                 return 25;
             }
             return 0;
-
         },
         kleineStraße: function (asdf) {
             asdf ? rollsArray = asdf : 0;
             var rollsArray = removeDuplicate(rollsArray);
-            for (var i = 0; i < 2; i++) {
+            for (let i = 0; i < 2; i++) {
                 if (rollsArray[i] === rollsArray[i + 1] - 1 &&
                     rollsArray[i] === rollsArray[i + 2] - 2 &&
                     rollsArray[i] === rollsArray[i + 3] - 3) {
@@ -437,7 +426,6 @@ $('#button_undo').click(function () {
                 }
             }
             return 0;
-
         },
         großeStraße: function (asdf) {
             asdf ? rollsArray = asdf : rollsArray;
@@ -462,7 +450,7 @@ $('#button_undo').click(function () {
             }
             return 0;
         },
-        Chance: function (asdf) {            
+        Chance: function (asdf) {
             asdf ? rollsArray = asdf : 0;
             return arraySum(rollsArray) || 0;
         },
@@ -472,7 +460,7 @@ $('#button_undo').click(function () {
         sum_sums: function (asdf, i) {
             let sum_current = 0;
             let found = $(sheet[i].sums + '.currentPlayer');
-            for (var i = 0; i < found.length; i++) {
+            for (let i = 0; i < found.length; i++) {
                 sum_current += parseInt($('#' + found[i].id + '.currentPlayer').html()) || 0;
             }
             return sum_current;
@@ -491,14 +479,17 @@ $('#button_undo').click(function () {
     */
     function finishedGame() {
         $('div.container.kniffel_win').show();
-        var winningTextString = '';
-        for (var i = 1; i <= Math.min(player_amount, 4); i++) {
+        let winningTextString = '';
+        for (let i = 1; i <= Math.min(player_amount, 4); i++) {
             winningTextString += 'Player' + i + ' scored: ' + $('#tl19_' + i + '').html() + '<br>';
         }
         $('#winningText').html(winningTextString);
 
     }
 
+    /*  swaps between chars and unicode for the dice-numbers 1-6
+        - checks which way to swap via if-function
+        - returns the swapped result */
     function charDice(asdf) {
         //console.log(asdf);
         if (Number.isInteger(asdf)) {
@@ -523,7 +514,6 @@ $('#button_undo').click(function () {
                     break;
                 default:
                     asdf = '-';
-
             }
         } else {
             switch (asdf) {
@@ -547,27 +537,40 @@ $('#button_undo').click(function () {
                     break;
                 default:
                     asdf = '-';
-
-
             }
-
         }
         return asdf;
     }
 
+    /*  returns an array containing dice-rolls:
+        - loops through available dices and fills an aray with dice-values
+        - sorts that array and returns it */
     function getRollsArray() {
-        let string ='';
         let numDices = $('.dice').length;
-        for (var i = 1; i <= numDices; i++) {
-            string += $('#roll' + i).data('dice_value');
+        for (let i = 1; i <= numDices; i++) {
+            rollsArray[i-1] = parseInt($('#roll' + i).data('dice_value'));
         }
-        rollsArray = string.split('').sort();
-        for (var i = 0; i < rollsArray.length; i++) {
-            rollsArray[i] = parseInt(rollsArray[i]);
-        }
+        rollsArray = rollsArray.sort();
         return rollsArray;
     }
-    // copy paste aus'm netz
+    
+    /*  creates the parameter with random values for css transform
+        - streight forward random-method for:
+        -   - rotation between 1 and 360 degrees
+        -   - translation on x- and y-axis between 1 and 10 px
+        - returns the combined string */
+    function diceTransform() {
+        let angle = Math.floor(Math.random() * 360) + 1;
+        angle = angle + 'deg';
+        let translX = Math.floor(Math.random() * 10) + 1;
+        translX = translX + 'px';
+        let translY = Math.floor(Math.random() * 10) + 1;
+        translY = translY + 'px';
+        let transformArg = 'rotate(' + angle + ') translate(' + translX + ', ' + translY + ')';
+        return transformArg
+    }
+
+    // copy paste aus'm netz, Summenfunktion für Arrays mit neuer EC6(?)-Schreibweise
     function arraySum(array) {
         if (!array.length) {
             return 0;
@@ -577,7 +580,7 @@ $('#button_undo').click(function () {
         return sum;
     }
 
-    // copy paste aus'm netz
+    // copy paste aus'm netz, nutzt neue EC6(?)-funktion, um nur unique elemente zu bekommen.
     function removeDuplicate(arr) {
         let unique_array = Array.from(new Set(arr));
         return unique_array;

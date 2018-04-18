@@ -35,7 +35,7 @@
                     <list>
                         <ul>
                             <label for="player_count">Amount of players:</label>
-                            <input id='player_count' type='number' value='1' list='' placeholder='Players from 1 to over 9000' min='1' max='9001'>
+                            <input id='player_count' type='number' value='1' list='' placeholder='Players from 1 to over 9000...not really, max. 6' min='1' max='6'>
                         </ul>
                         <ul>
                             <label for="dice_sort">Sort the dice?</label>
@@ -47,7 +47,8 @@
                     <div class="kniffel_rolls container">
                         <h4>rolls</h4>
                         <button type="button" id="button_roll" class="button roll">roll!</button>
-                        <button type="button" id="button_undo" class="button undo" disabled>undo select!</button>
+                        <button type="button" id="button_undo" class="button undo" disabled>Undo select</button>
+                        <p>Remaining rolls: <span id='remaining_rolls'>3</span> </p>
                         <!--    
                         <button type="button" id="button_nextTurn" class="button roll">next turn!</button>                        
                         --> 
@@ -59,7 +60,6 @@
                             <div id="roll4" class="dice dice-available col" style='transform: rotate(90deg)'></div>
                             <div id="roll5" class="dice dice-available col" style='transform: rotate(-60deg)'></div>
                         </div>
-                            <p>Remaining rolls: <span id='remaining_rolls'>3</span> </p>
                     </div>
                     <div class="kniffel_win container" style='display: none'>
                         <h4>Game Finished</h4>
@@ -69,12 +69,29 @@
                 </div>
 
                 </div>
-                <list style='text-align: left; position: relative; left: 50%;'>
-                    <br>
-                        <li>to do:</li>
-                        <li>sort out the (useless) classes</li>
-                        <li>...</li>
-                </list>
+                <div class="row">
+                    <div class="col">
+                        <list style='text-align: left; position: relative; left: 20%;'>
+                                <br>                            
+                                Features
+                                <li>change amount of columns=players (max 6)</li>
+                                <li>sort dices when none are fixed <br> (maybe add possibility to sort fixed dices, too)</li>
+                                <li>fix empty/invisible dices after loading page for the hard-mode <br> (more of a "bug" then a feature, but low priority)</li>
+                        </list>
+                    </div>
+                    <div class="col">
+                            <list style='text-align: left; position: relative; left: 20%;'>
+                                <br>
+                                    to do, bugs/features
+                                    <li>sort out the (useless) classes</li>
+                                    <li>fix charDice function, shorten it somehow</li>
+                                    <li>add child to dice-divs for easier/better CSS</li>
+                                    <li>variable dice-amount (between 1 and 10 dices?!)</li>
+                                    <li>extra lines in sheet</li>
+                                    <li>...</li>
+                            </list>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
