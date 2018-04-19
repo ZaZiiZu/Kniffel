@@ -32,18 +32,28 @@
                     </div>
                 </div>
                 <div class="kniffel_right container col-5">
-                    <list>
-                        <ul>
-                            <label for="player_count">Amount of players:</label>
-                            <input id='player_count' type='number' value='1' list='' placeholder='Players from 1 to over 9000...not really, max. 6' min='1' max='6'>
-                        </ul>
-                        <ul>
-                            <label for="dice_sort">Sort the dice?</label>
-                            <input id='dice_sort' type='checkbox' value='0'>
-                        </ul>
-                    </list>
-                    <button type="button" id="button_sheet_reset" class="button">reset</button>
-                    
+                    <button type="button" id="button_sheet_settings" class="button" >Show/Hide settings</button>
+                    <div class = 'kniffel_settings container' style='display: none'>
+                        <list>
+                            <ul>
+                                <label for="player_count">Amount of players:</label>
+                                <input id='player_count' type='number' value='1' list='' placeholder='Players from 1 to over 9000...not really, max. 6' min='1' max='6'>
+                            </ul>
+                            <ul>
+                                <label for="dice_count">Number of dices:</label>
+                                <input id='dice_count' type='number' value='5' list='' placeholder='1-10' min='1' max='10'>
+                            </ul>
+                            <ul>
+                                <label for="roll_count">Number of rolls:</label>
+                                <input id='roll_count' type='number' value='3' list='' placeholder='1-10' min='1' max='10'>
+                            </ul>
+                            <ul>
+                                <label for="dice_sort">Sort the dice?</label>
+                                <input id='dice_sort' type='checkbox' value='0'>
+                            </ul>
+                        </list>
+                        <button type="button" id="button_sheet_reset" class="button">reset</button>
+                    </div>
                     <div class="kniffel_rolls container">
                         <h4>rolls</h4>
                         <button type="button" id="button_roll" class="button roll">roll!</button>
@@ -52,14 +62,6 @@
                         <!--    
                         <button type="button" id="button_nextTurn" class="button roll">next turn!</button>                        
                         --> 
-                        <div class="row">
-                            <div id="roll1" class="dice dice-available col" style='transform: rotate(30deg)'></div>
-                            <div id="roll2" class="dice dice-available col" style='transform: rotate(160deg)'></div>
-                            <div id="roll3" class="dice dice-available col" style='transform: rotate(-30deg)'></div>
-                        </div><div class="row">
-                            <div id="roll4" class="dice dice-available col" style='transform: rotate(90deg)'></div>
-                            <div id="roll5" class="dice dice-available col" style='transform: rotate(-60deg)'></div>
-                        </div>
                     </div>
                     <div class="kniffel_win container" style='display: none'>
                         <h4>Game Finished</h4>
@@ -76,7 +78,6 @@
                                 Features
                                 <li>change amount of columns=players (max 6)</li>
                                 <li>sort dices when none are fixed <br> (maybe add possibility to sort fixed dices, too)</li>
-                                <li>fix empty/invisible dices after loading page for the hard-mode <br> (more of a "bug" then a feature, but low priority)</li>
                         </list>
                     </div>
                     <div class="col">
@@ -84,7 +85,6 @@
                                 <br>
                                     to do, bugs/features
                                     <li>sort out the (useless) classes</li>
-                                    <li>fix charDice function, shorten it somehow</li>
                                     <li>add child to dice-divs for easier/better CSS</li>
                                     <li>variable dice-amount (between 1 and 10 dices?!)</li>
                                     <li>extra lines in sheet</li>

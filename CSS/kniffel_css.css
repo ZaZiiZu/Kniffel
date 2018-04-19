@@ -4,6 +4,7 @@
     border-width: 1px;
     padding: 0 10px 0 10px;
     min-width: 57px;
+    text-shadow: 0 0 1px white;
 }
 .kniffel_sheet {
     border-style: none;
@@ -42,7 +43,6 @@ div .table1 {
     margin: auto;
 }
 
-
 td.columns.active.clickable:hover {
     cursor: pointer;
 }
@@ -60,11 +60,11 @@ td.columns {
     font-weight: 600; 
 }
 .table1 td.fixed {
-    background: rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 80px rgba(0, 0, 0, 0.4) inset;
 }
 
 td.block2 {
-    background: rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 80px rgba(0, 0, 0, 0.4) inset;
     font-weight: 700; 
 }
 .table1 td.currentPlayer {
@@ -84,4 +84,23 @@ td.block2 {
 }
 .container-fluid {
     margin: 20px;
+}
+.player1 {
+    background: rgba(0,0, 255, 0.3);
+}
+.player2 {
+    background: rgba(0,255, 0, 0.3);
+}
+.player3 {
+    background: rgba(255,0, 0, 0.3);
+}
+.player4 {
+    background: rgba(0,255, 255, 0.3);
+}
+.kniffel_right {
+    align-self:auto;
+}
+
+.kniffel_left {
+    align-self:auto;
 }

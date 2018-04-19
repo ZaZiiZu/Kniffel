@@ -7,11 +7,21 @@ $(document).ready(function () {
         ------------------------------------------------------------------------------------------------------------
     */
 
-    var player_amount; // gets the value from html-input 
     var currentPlayer; // has to start at 0 (or blank)
     var remaining_rolls; // gets the value during newTurn (included in newGame)
 
     var rollsArray = []; // no easy/obvious way to get rid of this "global" variable for now
+
+    var sheetSettings = {
+        player_amount: 0, // get new player-count from the form-element
+        dice_amount: 0, // get new dice-count from the form-element
+        roll_amount: 0,
+        adjust_settings: function () {
+            this.player_amount = parseInt($('#player_count').val());
+            this.dice_amount = parseInt($('#dice_count').val());
+            this.roll_amount = parseInt($('#roll_count').val());
+        },
+    }
 
     // to make "Undo select" work
     var lastTurn = {
@@ -19,6 +29,7 @@ $(document).ready(function () {
         player: '',
         cell: '',
         remainingRolls: '',
+        state: '',
     }
 
     // helper for sheet, bundles classes for created table-rows/cells
@@ -28,10 +39,10 @@ $(document).ready(function () {
             return this.blockAll + " " + 'block1 clickable ';
         },
         block2: function () {
-            return this.blockAll + " " + 'block2 auto ';
+            return this.blockAll + " " + 'block2 ';
         },
         block3: function () {
-            return this.blockAll + " " + 'block3 clickable ';
+            return this.blockAll + " " + 'block3 clickable';
         },
     }
 
@@ -107,14 +118,16 @@ $(document).ready(function () {
         {
             name: "Dreierpasch",
             classBlock: classes.block3(),
-            methode: 'dreierPasch',
+            methode: 'pasch',
             line: 'tl10',
+            sums: '3',
         },
         {
             name: "Viererpasch",
             classBlock: classes.block3(),
-            methode: 'viererPasch',
+            methode: 'pasch',
             line: 'tl11',
+            sums: '4',
         },
         {
             name: "Full-House",
@@ -139,6 +152,7 @@ $(document).ready(function () {
             classBlock: classes.block3(),
             methode: 'Kniffel',
             line: 'tl15',
+            sums: '5',
         },
         {
             name: "Chance1",
@@ -190,6 +204,9 @@ $(document).ready(function () {
     /* When 'new game' button is discovered and clicked, make new game...duuh */
     $("body").on('click', '#button_sheet_newGame, #button_sheet_reset', function () {
         newGame();
+    }) 
+    $("body").on('click', '#button_sheet_settings', function () {
+        $('.kniffel_settings').toggle();
     })
 
     /*  When 'roll' button is clicked:
@@ -233,15 +250,16 @@ $(document).ready(function () {
         - saves the pointer to this cell under lastTurn for the undo-function
         - newTurn initiates new turn and/or game end
         - enables the undo-button to be used */
-    $("body").on('click', '.active.clickable.currentPlayer', function () {
+    $("body").on('click', '.clickable.active.currentPlayer', function () {
         let endFlag = fixSelf($(this));
         lastTurn.cell = this;
         newTurn(endFlag);
         $('#button_undo').prop('disabled', false);
     })
 
-    /*  Click on dice to toggle fix */
+    /*  Click on dice to toggle fix, not possible when newTurn about to start */
     $('body').on('click', '.dice', function () {
+        if ( remaining_rolls == sheetSettings.roll_amount ) {return;}
         let thisObject = $(this);
         $(thisObject).toggleClass('dice-available');
     })
@@ -260,6 +278,7 @@ $(document).ready(function () {
         $(thisObject).removeClass('active').addClass('fixed');
         $('.currentPlayer.active').removeClass('active');
         let x = $(".columns.clickable").not('.fixed').length;
+        console.log('unfixed cells: ', x)
         return x == 0 ? 1 : 0;
     }
 
@@ -272,15 +291,15 @@ $(document).ready(function () {
         - deactivates any clickable cells and removes cleans up currentPlayer-tags
         - cycles to next player via modulo-operation */
     function newTurn(endFlag) {
-        endFlag == 1 ? finishedGame() : 0;
         $('#button_roll').prop('disabled', false);
-        remaining_rolls = 3 + 1;
+        remaining_rolls = sheetSettings.roll_amount + 1;
         remainingRolls();
         $('.dice').addClass('dice-available');
         // at flag==2, fill() will be skipped. flag==2 occurs after newGame(), so fill() doesn't produce bugs with currentPlayer being 0.
         endFlag == 2 ? 0 : fill([]); 
+        endFlag == 1 ? finishedGame() : 0;
         $('.currentPlayer').removeClass('currentPlayer').removeClass('active');
-        currentPlayer = (currentPlayer % player_amount) + 1; //modulo-operation to cycle between several players
+        currentPlayer = (currentPlayer % sheetSettings.player_amount) + 1; //modulo-operation to cycle between several players
     }
 
     /*  Ends last and initializes new game:
@@ -289,10 +308,11 @@ $(document).ready(function () {
         - hides the win-Box 
         - initializes new turn, see newTurn() with the flag 2 to skip fill() */
     function newGame() {
-        player_amount = $('#player_count').val(); // get new player-count from the form-element
         currentPlayer = 0; //resets to 0, it increments to 1 during newTurn(). 
-        $('#table1').remove();
+        sheetSettings.adjust_settings();
         generate_sheet();
+        generate_dices();
+        $('div.container.kniffel_rolls').show();
         $('.kniffel_win').hide();
         newTurn(2);
     }
@@ -303,6 +323,7 @@ $(document).ready(function () {
         - if sort-dice is checked, re-arranges the visual dices (only if no dices are fixed. too much workaround to fix that) */
     function roll() {
         var numDices = $('.dice').length;
+
         if (numDices) {
             for (var i = 1; i <= numDices; i++) {
                 let k = Math.floor(Math.random() * 6) + 1;
@@ -328,7 +349,7 @@ $(document).ready(function () {
         $('#remaining_rolls').text(remaining_rolls);
         if (remaining_rolls <= 0) {
             $('#button_roll').prop('disabled', true).text('No rolls left');
-        } else if (remaining_rolls == 3) {
+        } else if (remaining_rolls == sheetSettings.roll_amount) {
             $('#button_roll').text('New Turn');
         } else {
             $('#button_roll').text('Roll');
@@ -336,14 +357,14 @@ $(document).ready(function () {
     }
 
     /*  That's where the magic happens:
-        - creates rollsArray either from the rolls, or from overridden pre-set
+        - gets rollsArray either from the rolls, or from overridden pre-set
         - goes through the sheet-object and runs individual methods for all the lines
         - while in loop, fills the sheet with those calculated numbers */
     function fill(rollsOverride) {
         rollsOverride ? rollsArray = rollsOverride : rollsArray = getRollsArray();
         for (let i = 0; i < sheet.length; i++) {
             $("#" + sheet[i].line + "_" + currentPlayer).addClass('currentPlayer');
-            let x = allFunctions[sheet[i].methode](rollsArray, i) || 0;
+            let x = lineFunctions[sheet[i].methode](rollsArray, i) || 0;
             $("#" + sheet[i].line + "_" + currentPlayer).not('.fixed').text(x);
         }
     }
@@ -351,18 +372,19 @@ $(document).ready(function () {
     /*  generates the sheet:
         - similar as above: generates table based on sheet-Object
         - creates the table "in air", and appends to a specific div when it's generated */
-    function generate_sheet() {
+    function generate_sheet() {        
+        $('#table1').remove();
         let j = 0;
-        let idle = Math.max(4 - player_amount, 0);
+        let idle = Math.max(4 - sheetSettings.player_amount, 0);
 
         let table = $('<table>').attr('id', 'table1').addClass('table1');
         for (let i = 1; i < sheet.length; i++) {
             let newColumns = "<td class='" + sheet[i].classBlock + " categories'" + "id='" + sheet[i].line + "_" + 0 + "'>" + sheet[i].name + "</td>";
-            for (j = 1; j <= player_amount; j++) {
+            for (j = 1; j <= sheetSettings.player_amount; j++) {
                 newColumns += "<td class='" + sheet[i].classBlock + " columns player" + j + "'" + "id='" + sheet[i].line + "_" + j + "'>0</td>";
             }
             if (idle) {
-                for (j; j < (parseInt(idle) + parseInt(player_amount) + 1); j++) {
+                for (j; j < (parseInt(idle) + parseInt(sheetSettings.player_amount) + 1); j++) {
                     newColumns += "<td class='" + sheet[i].classBlock + " idle'" + "id='" + sheet[i].line + "_" + j + "'></td>";
                 }
             }
@@ -371,39 +393,55 @@ $(document).ready(function () {
         }
         $(".kniffel_sheet").append(table);
     }
+    /*  generates the container including dices:
+        - creates and appends the container (to kniffel_rolls div)
+        - creates and appends rows for every 3 dices (3 dices/row max.) (to container)
+        - creates and appends dices to the new rows until finished (to container) */
+    function generate_dices() {
+        let j = 0;
+        $('.dice_container').remove();
+        let dice_container = $('<div>').addClass('dice_container');
+        $('.kniffel_rolls').append(dice_container);
+        for (let i = 1; i <= sheetSettings.dice_amount; i++) {
+            if (i%3 == 1) {
+                j++;
+                let newRow = $('<div>').addClass('row').attr('id', 'dicesRow'+j)
+                $('.dice_container').append(newRow);
+            }             
+            let newDice = $('<div>').addClass('dice dice-available col').attr("id", "roll" + i);
+            $('#dicesRow'+j).append(newDice);
+        }
+    }
 
+    
     /* Object with functions for all methods for all lines */
-    var allFunctions = {
+    var lineFunctions = {
+        highestPasch: function(asdf) {
+            let x = 1, highest = 1;
+            for (let i = 0; i <= asdf.length; i++) {
+                if (asdf[i]==asdf[i+1]) {
+                    x++;
+                }
+                else {
+                    highest = Math.max(highest, x);
+                    x=1;
+                }
+            }
+            return highest;
+        },
+        pasch: function(asdf, i){
+            let highest = this.highestPasch(asdf);
+            if (highest >= sheet[i].sums) {
+                return arraySum(asdf);
+            }
+            return 0;
+        },
         matching: function (asdf, i) {
             asdf ? rollsArray = asdf : 0;
             let x = arraySum(rollsArray.filter(function (jk) {
                 return jk == sheet[i].sums;
             }))
             return x;
-
-        },
-        dreierPasch: function (asdf) {
-            asdf ? rollsArray = asdf : 0;
-            for (let i = 0; i < 3; i++) {
-                if (
-                    rollsArray[i] === rollsArray[i + 1] &&
-                    rollsArray[i] === rollsArray[i + 2]) {
-                    return arraySum(rollsArray);
-                }
-            }
-            return 0;
-        },
-        viererPasch: function (asdf) {
-            asdf ? rollsArray = asdf : 0;
-            for (let i = 0; i < 2; i++) {
-                if (/[1-6]/g.test(rollsArray) &&
-                    rollsArray[i] === rollsArray[i + 1] &&
-                    rollsArray[i] === rollsArray[i + 2] &&
-                    rollsArray[i] === rollsArray[i + 3]) {
-                    return arraySum(rollsArray);
-                }
-            }
-            return 0;
         },
         fullHouse: function (asdf) {
             asdf ? rollsArray = asdf : 0;
@@ -437,15 +475,10 @@ $(document).ready(function () {
                 return 40;
             }
             return 0;
-
         },
-        Kniffel: function (asdf) {
-            asdf ? rollsArray = asdf : 0;
-            if (/[1-6]/g.test(rollsArray) &&
-                rollsArray[0] === rollsArray[1] &&
-                rollsArray[0] === rollsArray[2] &&
-                rollsArray[0] === rollsArray[3] &&
-                rollsArray[0] === rollsArray[4]) {
+        Kniffel: function (asdf, i) {
+            let highest = this.highestPasch(asdf);
+            if (highest >= sheet[i].sums) {
                 return 50;
             }
             return 0;
@@ -478,68 +511,38 @@ $(document).ready(function () {
     ------------------------------------------------------ 
     */
     function finishedGame() {
+        $('div.container.kniffel_rolls').hide();
         $('div.container.kniffel_win').show();
         let winningTextString = '';
-        for (let i = 1; i <= Math.min(player_amount, 4); i++) {
-            winningTextString += 'Player' + i + ' scored: ' + $('#tl19_' + i + '').html() + '<br>';
+        for (let i = 1; i <= Math.min(sheetSettings.player_amount, 4); i++) {
+            winningTextString += 'Player' + i + ' scored: ' + $('.total_total.player' +i + '').html() + '<br>';
         }
         $('#winningText').html(winningTextString);
-
     }
+    
+    var charDicePairs = [
+        [1, '\u2680'],
+        [2, '\u2681'],
+        [3, '\u2682'],
+        [4, '\u2683'],
+        [5, '\u2684'],
+        [6, '\u2685'],
+    ]
 
-    /*  swaps between chars and unicode for the dice-numbers 1-6
-        - checks which way to swap via if-function
+    /*  swaps between chars and unicode set in charDicePairs variable
+        - loops through the columns and the rows of the Array
         - returns the swapped result */
     function charDice(asdf) {
         //console.log(asdf);
-        if (Number.isInteger(asdf)) {
-            switch (asdf) {
-                case 1:
-                    asdf = '\u2680';
-                    break;
-                case 2:
-                    asdf = '\u2681';
-                    break;
-                case 3:
-                    asdf = '\u2682';
-                    break;
-                case 4:
-                    asdf = '\u2683';
-                    break;
-                case 5:
-                    asdf = '\u2684';
-                    break;
-                case 6:
-                    asdf = '\u2685';
-                    break;
-                default:
-                    asdf = '-';
-            }
-        } else {
-            switch (asdf) {
-                case '\u2680':
-                    asdf = 1;
-                    break;
-                case '\u2681':
-                    asdf = 2;
-                    break;
-                case '\u2682':
-                    asdf = 3;
-                    break;
-                case '\u2683':
-                    asdf = 4;
-                    break;
-                case '\u2684':
-                    asdf = 5;
-                    break;
-                case '\u2685':
-                    asdf = 6;
-                    break;
-                default:
-                    asdf = '-';
+        for (let j = 0; j < 2; j++) {
+            for (let i = 0; i < charDicePairs.length; i++) {
+                switch (asdf) {
+                    case charDicePairs[i][j]:
+                        asdf = charDicePairs[i][(1 - j)];
+                        return asdf;
+                }
             }
         }
-        return asdf;
     }
 
     /*  returns an array containing dice-rolls:
@@ -624,30 +627,30 @@ $(document).ready(function () {
             var testK1 = [1, 2, 2, 2, 2];
             var testK2 = [2, 2, 2, 2, 2];
             console.log('TESTS-START');
-            console.log('3erPasch testForeign', testForeign, allFunctions.dreierPasch(testForeign));
-            console.log('3erPasch testNone', testNone, allFunctions.dreierPasch(testNone));
-            console.log('3erPasch test3er1', test3er1, allFunctions.dreierPasch(test3er1));
-            console.log('3erPasch test3er2', test3er2, allFunctions.dreierPasch(test3er2));
-            console.log('4erPasch testForeign', testForeign, allFunctions.viererPasch(testForeign));
-            console.log('4erPasch testNone', testNone, allFunctions.viererPasch(testNone));
-            console.log('4erPasch test4er1', test4er1, allFunctions.viererPasch(test4er1));
-            console.log('4erPasch test4er2', test4er2, allFunctions.viererPasch(test4er2));
-            console.log('Full-House testForeign', testForeign, allFunctions.fullHouse(testForeign));
-            console.log('Full-House testNone', testNone, allFunctions.fullHouse(testNone));
-            console.log('Full-House testFH1', testFH1, allFunctions.fullHouse(testFH1));
-            console.log('Full-House testFH2', testFH2, allFunctions.fullHouse(testFH2));
-            console.log('kleineStraße testForeign', testForeign, allFunctions.kleineStraße(testForeign));
-            console.log('kleineStraße testNone', testNone, allFunctions.kleineStraße(testNone));
-            console.log('kleineStraße testkS1', testkS1, allFunctions.kleineStraße(testkS1));
-            console.log('kleineStraße testkS2', testkS2, allFunctions.kleineStraße(testkS2));
-            console.log('großeStraße testForeign', testForeign, allFunctions.großeStraße(testForeign));
-            console.log('großeStraße testNone', testNone, allFunctions.großeStraße(testNone));
-            console.log('großeStraße testgS1', testgS1, allFunctions.großeStraße(testgS1));
-            console.log('großeStraße testgS2', testgS2, allFunctions.großeStraße(testgS2));
-            console.log('Kniffel testForeign', testForeign, allFunctions.Kniffel(testForeign));
-            console.log('Kniffel testNone', testNone, allFunctions.Kniffel(testNone));
-            console.log('Kniffel testK1', testK1, allFunctions.Kniffel(testK1));
-            console.log('Kniffel testK2', testK2, allFunctions.Kniffel(testK2));
+            console.log('3erPasch testForeign', testForeign, lineFunctions.dreierPasch(testForeign));
+            console.log('3erPasch testNone', testNone, lineFunctions.dreierPasch(testNone));
+            console.log('3erPasch test3er1', test3er1, lineFunctions.dreierPasch(test3er1));
+            console.log('3erPasch test3er2', test3er2, lineFunctions.dreierPasch(test3er2));
+            console.log('4erPasch testForeign', testForeign, lineFunctions.viererPasch(testForeign));
+            console.log('4erPasch testNone', testNone, lineFunctions.viererPasch(testNone));
+            console.log('4erPasch test4er1', test4er1, lineFunctions.viererPasch(test4er1));
+            console.log('4erPasch test4er2', test4er2, lineFunctions.viererPasch(test4er2));
+            console.log('Full-House testForeign', testForeign, lineFunctions.fullHouse(testForeign));
+            console.log('Full-House testNone', testNone, lineFunctions.fullHouse(testNone));
+            console.log('Full-House testFH1', testFH1, lineFunctions.fullHouse(testFH1));
+            console.log('Full-House testFH2', testFH2, lineFunctions.fullHouse(testFH2));
+            console.log('kleineStraße testForeign', testForeign, lineFunctions.kleineStraße(testForeign));
+            console.log('kleineStraße testNone', testNone, lineFunctions.kleineStraße(testNone));
+            console.log('kleineStraße testkS1', testkS1, lineFunctions.kleineStraße(testkS1));
+            console.log('kleineStraße testkS2', testkS2, lineFunctions.kleineStraße(testkS2));
+            console.log('großeStraße testForeign', testForeign, lineFunctions.großeStraße(testForeign));
+            console.log('großeStraße testNone', testNone, lineFunctions.großeStraße(testNone));
+            console.log('großeStraße testgS1', testgS1, lineFunctions.großeStraße(testgS1));
+            console.log('großeStraße testgS2', testgS2, lineFunctions.großeStraße(testgS2));
+            console.log('Kniffel testForeign', testForeign, lineFunctions.Kniffel(testForeign));
+            console.log('Kniffel testNone', testNone, lineFunctions.Kniffel(testNone));
+            console.log('Kniffel testK1', testK1, lineFunctions.Kniffel(testK1));
+            console.log('Kniffel testK2', testK2, lineFunctions.Kniffel(testK2));
             console.log('TESTS-ENDE');
 
         }
@@ -659,7 +662,7 @@ $(document).ready(function () {
         });
 
         function sheet_fill() {
-            for (i = 0; i < player_amount; i++) {
+            for (i = 0; i < sheetSettings.player_amount; i++) {
                 $("#tl1_" + (1 + i)).html(Math.round(Math.random() * 5) * 1);
                 $("#tl2_" + (1 + i)).html(Math.round(Math.random() * 5) * 2);
                 $("#tl3_" + (1 + i)).html(Math.round(Math.random() * 5) * 3);
