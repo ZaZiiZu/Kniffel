@@ -520,6 +520,11 @@ $(document).ready(function () {
         $('#winningText').html(winningTextString);
     }
     
+    
+
+    /*  swaps between chars and unicode set in charDicePairs variable
+        - loops through the columns and the rows of the Array
+        - returns the swapped result */
     var charDicePairs = [
         [1, '\u2680'],
         [2, '\u2681'],
@@ -528,10 +533,6 @@ $(document).ready(function () {
         [5, '\u2684'],
         [6, '\u2685'],
     ]
-
-    /*  swaps between chars and unicode set in charDicePairs variable
-        - loops through the columns and the rows of the Array
-        - returns the swapped result */
     function charDice(asdf) {
         //console.log(asdf);
         for (let j = 0; j < 2; j++) {
@@ -544,7 +545,33 @@ $(document).ready(function () {
             }
         }
     }
-
+/*      trying to enclose the variable with function so it's 
+        - not global, 
+        - but also doesn't get declared each new function-call
+    (function (){
+        var charDicePairs = [
+            [1, '\u2680'],
+            [2, '\u2681'],
+            [3, '\u2682'],
+            [4, '\u2683'],
+            [5, '\u2684'],
+            [6, '\u2685'],
+        ]
+        function charDice(asdf) {
+            //console.log(asdf);
+            for (let j = 0; j < 2; j++) {
+                for (let i = 0; i < charDicePairs.length; i++) {
+                    switch (asdf) {
+                        case charDicePairs[i][j]:
+                            asdf = charDicePairs[i][(1 - j)];
+                            return asdf;
+                    }
+                }
+            }
+        }
+        return charDice(asdf);
+    }()); 
+*/
     /*  returns an array containing dice-rolls:
         - loops through available dices and fills an aray with dice-values
         - sorts that array and returns it */
